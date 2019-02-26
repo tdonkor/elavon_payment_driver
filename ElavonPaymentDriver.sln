@@ -1,0 +1,47 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2000
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Acrelec.Mockingbird.Core", "Acrelec.Mockingbird.Core", "{E579F673-6E95-43B1-93D1-6A94046A575B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ECRUtilATL Libraries", "ECRUtilATL Libraries", "{639CB3F2-6DC2-4036-A429-27A451F23645}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Payments", "Payments", "{1BD55619-7ACE-4A16-ADFF-6A8B825D0398}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Driver", "Driver", "{4743BD37-057B-4F21-AD7B-6CF05B99CE66}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Loader", "Loader", "{92C407F5-8DC3-4F42-96CF-B652D394B10B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "uk_elavon_ecrutilatl", "payment\Driver\uk_elavon_ecrutilatl\uk_elavon_ecrutilatl.csproj", "{B80550E2-2A0E-4321-A8B1-9CF92FBE0799}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "payment_ecrutilatl", "payment\Loader\payment_ecrutilatl\payment_ecrutilatl.csproj", "{17241423-A917-4982-B954-DAB38630653C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B80550E2-2A0E-4321-A8B1-9CF92FBE0799}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B80550E2-2A0E-4321-A8B1-9CF92FBE0799}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B80550E2-2A0E-4321-A8B1-9CF92FBE0799}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B80550E2-2A0E-4321-A8B1-9CF92FBE0799}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17241423-A917-4982-B954-DAB38630653C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17241423-A917-4982-B954-DAB38630653C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17241423-A917-4982-B954-DAB38630653C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17241423-A917-4982-B954-DAB38630653C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4743BD37-057B-4F21-AD7B-6CF05B99CE66} = {1BD55619-7ACE-4A16-ADFF-6A8B825D0398}
+		{92C407F5-8DC3-4F42-96CF-B652D394B10B} = {1BD55619-7ACE-4A16-ADFF-6A8B825D0398}
+		{B80550E2-2A0E-4321-A8B1-9CF92FBE0799} = {4743BD37-057B-4F21-AD7B-6CF05B99CE66}
+		{17241423-A917-4982-B954-DAB38630653C} = {92C407F5-8DC3-4F42-96CF-B652D394B10B}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E2F0BE1C-121E-4D9B-81E1-6BFEF5105304}
+	EndGlobalSection
+EndGlobal
