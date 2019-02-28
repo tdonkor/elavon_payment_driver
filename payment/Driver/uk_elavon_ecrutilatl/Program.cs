@@ -1,15 +1,53 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Acrelec.Library.Logger;
+using Acrelec.Mockingbird.Payment.Configuration;
+using Acrelec.Mockingbird.Payment.Contracts;
+using Acrelec.Mockingbird.Payment.ExtensionMethods;
+using Acrelec.Mockingbird.Payment.Settlement;
+using System;
+using System.ServiceModel;
+using System.Threading;
 
-namespace uk_elavon_ecrutilatl
+namespace Acrelec.Mockingbird.Payment
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        public static ManualResetEvent ManualResetEvent = new ManualResetEvent(false);
+
+        public const string NAME = "UK_ELAVON_ECRUTILATL";
+
+        private static void Main(string[] args)
         {
+            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            Log.Info($"{assembly.GetTitle()} {assembly.GetFileVersion()} [build timestamp: {assembly.GetBuildTimestamp():yyyy/MM/dd HH:mm:ss}]");
+
+            AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+
+            var appConfig = AppConfiguration.Instance;
+
+            using (var host = new ServiceHost(typeof(PaymentService), new Uri("net.pipe://localhost")))
+            using (new Heartbeat())
+            using (new SettlementListener(appConfig.SettlementTriggerPort, SettlementWorker.OnSettlement))
+            {
+                host.AddServiceEndpoint(typeof(IPaymentService), new NetNamedPipeBinding(), NAME);
+                host.Open();
+
+                Log.Info("Driver Service Running...");
+
+                ManualResetEvent.WaitOne();
+            }
+
+            Log.Info("Driver application requested to shut down.");
+        }
+
+        private static void OnProcessExit(object sender, EventArgs e)
+        {
+            Log.Info("Shell driver application exiting");
+        }
+
+        private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            Log.Error((e.ExceptionObject as Exception).ToString());
         }
     }
 }

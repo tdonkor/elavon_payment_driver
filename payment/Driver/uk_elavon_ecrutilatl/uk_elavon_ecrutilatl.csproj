@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{B80550E2-2A0E-4321-A8B1-9CF92FBE0799}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>uk_elavon_ecrutilatl</RootNamespace>
-    <AssemblyName>uk_elavon_ecrutilatl</AssemblyName>
+    <RootNamespace>Acrelec.Mockingbird.Payment</RootNamespace>
+    <AssemblyName>PAY_UK_ELAVON_ECRUTILATL</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -31,9 +31,26 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>acrelec_icon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>
+    </StartupObject>
+  </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Acrelec.Library.Logger">
+      <HintPath>..\..\..\Acrelec.MockingBird.Core\Acrelec.Library.Logger.dll</HintPath>
+    </Reference>
+    <Reference Include="Acrelec.Library.Pipes">
+      <HintPath>..\..\..\Acrelec.MockingBird.Core\Acrelec.Library.Pipes.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -42,11 +59,43 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration\AppConfiguration.cs" />
+    <Compile Include="Contracts\IPaymentService.cs" />
+    <Compile Include="Contracts\PaymentData.cs" />
+    <Compile Include="Contracts\PaymentResult.cs" />
+    <Compile Include="Contracts\Result.cs" />
+    <Compile Include="Contracts\ResultCode.cs" />
+    <Compile Include="Contracts\RuntimeConfiguration.cs" />
+    <Compile Include="ECRUtilATLApi.cs" />
+    <Compile Include="ExtensionMethods\AssemblyExtensions.cs" />
+    <Compile Include="GetTerminalStatus.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Heartbeat.cs" />
+    <Compile Include="PaymentService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SettlementInfo.cs" />
+    <Compile Include="Settlement\SettlementListener.cs" />
+    <Compile Include="Settlement\SettlementWorker.cs" />
+    <Compile Include="TransactionInfo.cs" />
+    <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="acrelec_icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="ECRUtilATLLib">
+      <Guid>{846726CA-5096-4E7E-877C-EF56FC2E42DE}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </COMReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

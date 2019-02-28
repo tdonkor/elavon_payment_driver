@@ -4,8 +4,20 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.27703.2000
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Acrelec.Mockingbird.Core", "Acrelec.Mockingbird.Core", "{E579F673-6E95-43B1-93D1-6A94046A575B}"
+	ProjectSection(SolutionItems) = preProject
+		Acrelec.MockingBird.Core\Acrelec.Library.Coder.dll = Acrelec.MockingBird.Core\Acrelec.Library.Coder.dll
+		Acrelec.MockingBird.Core\Acrelec.Library.Logger.dll = Acrelec.MockingBird.Core\Acrelec.Library.Logger.dll
+		Acrelec.MockingBird.Core\Acrelec.Library.LogReport.dll = Acrelec.MockingBird.Core\Acrelec.Library.LogReport.dll
+		Acrelec.MockingBird.Core\Acrelec.Library.Pipes.dll = Acrelec.MockingBird.Core\Acrelec.Library.Pipes.dll
+		Acrelec.MockingBird.Core\Mockingbird.Feather.Peripherals.dll = Acrelec.MockingBird.Core\Mockingbird.Feather.Peripherals.dll
+		Acrelec.MockingBird.Core\Mockingbird.Interfaces.Peripherals.dll = Acrelec.MockingBird.Core\Mockingbird.Interfaces.Peripherals.dll
+		Acrelec.MockingBird.Core\Newtonsoft.Json.dll = Acrelec.MockingBird.Core\Newtonsoft.Json.dll
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ECRUtilATL Libraries", "ECRUtilATL Libraries", "{639CB3F2-6DC2-4036-A429-27A451F23645}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\..\..\Program Files\Ingenico\ECR UTIL DLL_32Bit\lib\ECRUtilATL.dll = ..\..\..\..\Program Files\Ingenico\ECR UTIL DLL_32Bit\lib\ECRUtilATL.dll
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Payments", "Payments", "{1BD55619-7ACE-4A16-ADFF-6A8B825D0398}"
 EndProject
