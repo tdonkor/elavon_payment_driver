@@ -4,12 +4,9 @@ using Acrelec.Mockingbird.Payment.Contracts;
 using System;
 using System.Text;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.ServiceModel;
-using System.Xml.Linq;
-using System.Xml.XPath;
-using System.Security.Permissions;
+
 
 namespace Acrelec.Mockingbird.Payment
 {
