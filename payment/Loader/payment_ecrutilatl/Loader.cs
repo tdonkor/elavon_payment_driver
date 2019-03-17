@@ -74,7 +74,7 @@ namespace Acrelec.Mockingbird.Payment
                         ControlType = SettingDataType.IpAddress,
                         ControlName = "IP Address",
                         RealName = "IpAddress",
-                        CurrentValue = "1.1.1.2",
+                        CurrentValue = "192.168.254.98",
                         ControlDescription = "Static IP Address of the PED"
                     },
 

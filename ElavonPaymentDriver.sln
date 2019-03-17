@@ -16,7 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Acrelec.Mockingbird.Core", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ECRUtilATL Libraries", "ECRUtilATL Libraries", "{639CB3F2-6DC2-4036-A429-27A451F23645}"
 	ProjectSection(SolutionItems) = preProject
-		..\..\..\..\Program Files\Ingenico\ECR UTIL DLL_32Bit\lib\ECRUtilATL.dll = ..\..\..\..\Program Files\Ingenico\ECR UTIL DLL_32Bit\lib\ECRUtilATL.dll
+		ECRUtilATL Libraries\ECRUtilATL.dll = ECRUtilATL Libraries\ECRUtilATL.dll
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Payments", "Payments", "{1BD55619-7ACE-4A16-ADFF-6A8B825D0398}"
@@ -32,17 +32,27 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{B80550E2-2A0E-4321-A8B1-9CF92FBE0799}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B80550E2-2A0E-4321-A8B1-9CF92FBE0799}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B80550E2-2A0E-4321-A8B1-9CF92FBE0799}.Debug|x86.ActiveCfg = Debug|x86
+		{B80550E2-2A0E-4321-A8B1-9CF92FBE0799}.Debug|x86.Build.0 = Debug|x86
 		{B80550E2-2A0E-4321-A8B1-9CF92FBE0799}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B80550E2-2A0E-4321-A8B1-9CF92FBE0799}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B80550E2-2A0E-4321-A8B1-9CF92FBE0799}.Release|x86.ActiveCfg = Release|x86
+		{B80550E2-2A0E-4321-A8B1-9CF92FBE0799}.Release|x86.Build.0 = Release|x86
 		{17241423-A917-4982-B954-DAB38630653C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{17241423-A917-4982-B954-DAB38630653C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17241423-A917-4982-B954-DAB38630653C}.Debug|x86.ActiveCfg = Debug|x86
+		{17241423-A917-4982-B954-DAB38630653C}.Debug|x86.Build.0 = Debug|x86
 		{17241423-A917-4982-B954-DAB38630653C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17241423-A917-4982-B954-DAB38630653C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17241423-A917-4982-B954-DAB38630653C}.Release|x86.ActiveCfg = Release|x86
+		{17241423-A917-4982-B954-DAB38630653C}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

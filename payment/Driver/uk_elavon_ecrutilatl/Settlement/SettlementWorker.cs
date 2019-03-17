@@ -12,6 +12,7 @@ using Acrelec.Mockingbird.Payment.Contracts;
 using System.Text;
 using ECRUtilATLLib;
 
+
 namespace Acrelec.Mockingbird.Payment.Settlement
 {
     public class SettlementWorker
@@ -22,7 +23,7 @@ namespace Acrelec.Mockingbird.Payment.Settlement
 
             try
             {
-              //  ExecuteSettlement();
+                ExecuteSettlement();
 
                 Log.Info("Auto settlement executed!");
 
@@ -66,79 +67,93 @@ namespace Acrelec.Mockingbird.Payment.Settlement
         }
 
 
-        //private static void ExecuteSettlement()
-        //{
-        //    using (var api = new ECRUtilATLApi())
-        //    {
-        //        var config = RuntimeConfiguration.Instance;
+        private static void ExecuteSettlement()
+        {
+            using (var api = new ECRUtilATLApi())
+            {
+                var config = RuntimeConfiguration.Instance;
 
-        //        api.Connect(config.IpAddress);
+                api.Connect(config.IpAddress);
 
-        //        Log.Info("Executing auto settlement...");
-        //        var result = api.EndOfDayReport();
-        //        if (result == null)
-        //        {
-        //            Log.Info($"Error executing settlement: {result}");
-        //        }
-        //        else
-        //        {
-        //            Log.Info("Auto settlement executed.");
-        //           PersistReport(result);
-        //        }
-        //    }
-        //}
+                Log.Info("Executing auto settlement...");
+                var result = api.EndOfDayReport();
+                if (result == null)
+                {
+                    Log.Info($"Error executing settlement: {result}");
+                }
+                else
+                {
+                    Log.Info("Auto settlement executed.");
+                    PersistReport(result);
+                }
+            }
+        }
 
-        //private static void PersistReport(SettlementClass report)
-        //{
-        //    try
-        //    {
-        //        StringBuilder reportContent = new StringBuilder();
-        //        Log.Info($"Persist Report");
+        private static void PersistReport(ECRUtilATLLib.Settlement report)
+        {
+            try
+            {
+                StringBuilder reportContent = new StringBuilder();
+                Log.Info($"Persist Report");
 
-        //        //get the reponse details for the ticket
-        //        reportContent.Append($"End of Day\n");
-        //        reportContent.Append($"================\n\n");
+                //get the reponse details for the ticket
+                reportContent.Append($"End of Day\n");
+                reportContent.Append($"================\n\n");
+
+                /* Set the settlement outputs */
+                reportContent.Append($"MessageNumber: {report.MessageNumberOut}\n");
+                reportContent.Append($"Settlement Status: {report.SettlementStatusOut}\n");
+                reportContent.Append($"Settlement Date/Time: {report.SettlementDateTimeOut}\n");
+                reportContent.Append($"Settlement Response: {report.SettleResponseOut}\n");
+                reportContent.Append($"HelpDesk Number: {report.HelpDeskNumberOut}\n");
+                reportContent.Append($"Merchant Name: {report.MerchantNameOut}\n");
+                reportContent.Append($"Merchant Addr1: {report.MerchantAddress1Out}\n");
+                reportContent.Append($"Merchant Addr2: {report.MerchantAddress2Out}\n");
+                reportContent.Append($"Merchant Addr3: {report.MerchantAddress3Out}\n");
+                reportContent.Append($"Merchant Addr4: {report.MerchantAddress4Out}\n");
+                reportContent.Append($"Acquirer Merchant ID: {report.AcquirerMerchantIDOut}\n");
+                reportContent.Append($"Terminal Identifier: {report.TerminalIdentifierOut}\n");
+                reportContent.Append($"Terminal Country Code: {report.TerminalCountryCodeOut}\n");
+                reportContent.Append($"TerminalCurrencyCodeOut: {report.TerminalCurrencyCodeOut}\n");
+                reportContent.Append($"Terminal Currency Exponent: {report.TerminalCurrencyExponentOut}\n");
+                reportContent.Append($"Batch Number: {report.BatchNumberOut}\n");
+                reportContent.Append($"Acquirer Name: {report.AcquirerNameOut}\n");
+                reportContent.Append($"Cashbacks Amount: {report.CashbacksAmountOut}\n");
+                reportContent.Append($"Cashbacks Count: {report.CashbacksCountOut}\n");
+                reportContent.Append($"Debit Amount: {report.DebitAmountOut}\n");
+                reportContent.Append($"Debit Count: {report.DebitCountOut}\n");
+                reportContent.Append($"Credit Amount: {report.CreditAmountOut}\n");
+                reportContent.Append($"Credit Count: {report.CreditCountOut}\n");
+                reportContent.Append($"Sales Void Amount: {report.SalesVoidAmountOut}\n");
+                reportContent.Append($"Sales Void Count{report.SalesVoidCountOut}\n");
+                reportContent.Append($"Refunds Void Amount: {report.RefundsVoidAmountOut}\n");
+                reportContent.Append($"Refunds Void Count: {report.RefundsVoidCountOut}\n");
+                reportContent.Append($"Is Gratuity Enabled: {report.IsGratuityEnabledOut}\n");
+                reportContent.Append($"Gratuity Amount: {report.GratuityAmountOut}\n");
+                reportContent.Append($"Is Shift Process Enabled: {report.IsShiftProcessEnabledOut}\n");
+                reportContent.Append($"Sum Or Detail Report: {report.SumOrDetailReportOut}\n");
+                reportContent.Append($"Transaction Detail Data Record Number: {report.TransactionDetailDataRecordNumberOut}\n");
 
 
+                var config = AppConfiguration.Instance;
+                var outputDirectory = Path.GetFullPath(config.OutPath);
+                var outputPath = Path.Combine(outputDirectory, $"{DateTime.Now:yyyyMMddHHmmss}_settlement.txt");
 
-        //        reportContent.Append($"{report.AcquirerMerchantIDOut}\n");
-        //        reportContent.Append($"{report.AcquirerNameOut}\n");
-        //        //reportContent.Append($"{report.LastMessageNumberOut}\n");
-        //        //reportContent.Append($"{report.MerchantAddress1Out}\n");
-        //        //reportContent.Append($"{report.MerchantAddress2Out}\n");
-        //        //reportContent.Append($"{report.NumCardSchemeOut}\n");
-        //        //reportContent.Append($"{report.QuantityCashOut}\n");
-        //        //reportContent.Append($"{report.QuantityClessCreditsOut}\n");
-        //        //reportContent.Append($"{report.QuantityClessDebitsOut}\n");
-        //        //reportContent.Append($"{report.QuantityCreditsOut}\n");
-        //        //reportContent.Append($"{report.QuantityDebitsOut}\n");
-        //        //reportContent.Append($"{report.SettlementResultOut}\n");
-        //        //reportContent.Append($"{report.TerminalIdentityOut}\n");
-        //        //reportContent.Append($"{report.ValueCashOut}\n");
-        //        //reportContent.Append($"{report.ValueClessCreditsOut}\n");
-        //        //reportContent.Append($"{report.ValueClessDebitsOut}\n");
-        //        //reportContent.Append($"{report.ValueCreditsOut}\n");
-        //        //reportContent.Append($"{report.ValueDebitsOut}\n");
+                if (!Directory.Exists(outputDirectory))
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
 
-        //        var config = AppConfiguration.Instance;
-        //        var outputDirectory = Path.GetFullPath(config.OutPath);
-        //        var outputPath = Path.Combine(outputDirectory, $"{DateTime.Now:yyyyMMddHHmmss}_settlement.txt");
-
-        //        if (!Directory.Exists(outputDirectory))
-        //        {
-        //            Directory.CreateDirectory(outputDirectory);
-        //        }
-
-        //        Log.Info($"Persist Report path: {outputPath}");
-        //        //Write the new ticket
-        //        File.WriteAllText(outputPath, reportContent.ToString());
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Log.Info("PersistTicket error.");
-        //        Log.Error(ex);
-        //    }
-        //}
+                Log.Info($"Persist Report path: {outputPath}");
+                //Write the new ticket
+                File.WriteAllText(outputPath, reportContent.ToString());
+            }
+            catch (Exception ex)
+            {
+                Log.Info("PersistTicket error.");
+                Log.Error(ex);
+            }
+        }
 
         private static string ZipFiles(IDictionary<string, string> files)
         {

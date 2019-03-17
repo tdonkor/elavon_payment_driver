@@ -51,7 +51,7 @@ namespace Acrelec.Mockingbird.Payment
                     
                     Log.Info($"Connect Result: {connectResult}");
 
-                    if (connectResult != ECRUtilATLErrMsg.OK)
+                    if (connectResult != DiagnosticErrMsg.OK)
                     {
                         return new Result<PaymentData>((ResultCode)connectResult);
                     }
@@ -118,27 +118,28 @@ namespace Acrelec.Mockingbird.Payment
                 using (var api = new ECRUtilATLApi())
                 {
                     var connectResult = api.Connect(config.IpAddress);
-                    var disconnectResult = ECRUtilATLErrMsg.OK;
+                    var disconnectResult = DiagnosticErrMsg.OK;
 
 
                     Log.Info($"Connect Result: {connectResult}");
 
-                    if (connectResult != ECRUtilATLErrMsg.OK)
+                    if (connectResult != DiagnosticErrMsg.OK)
                     {
                         return new Result<PaymentData>((ResultCode)connectResult);
                     }
 
                     var payResult = api.Pay(amount, out var payResponse);
                     Log.Info($"Pay Result: {payResult}");
-                    Log.Info($"Pay Response Data: {Utils.GetTransactionOutResult(payResponse.TransactionStatusOut)}");
+                    Log.Info("Response Data: " + Utils.GetTransactionTypeString(Convert.ToInt16(payResponse.TransactionStatusOut)));
 
-                    if (payResult != ECRUtilATLErrMsg.OK)
+                    if (payResult != DiagnosticErrMsg.OK)
                     {
                         return new Result<PaymentData>((ResultCode)connectResult);
                     }
 
-                    data.Result = (PaymentResult)Utils.GetTransactionOutResult(payResponse.TransactionStatusOut);
+                     data.Result = (PaymentResult)Utils.GetTransactionOutResult(payResponse.TransactionStatusOut);
 
+          
                     if (data.Result != PaymentResult.Successful)
                     {
                         if (data.Result == PaymentResult.Failed)
@@ -159,36 +160,10 @@ namespace Acrelec.Mockingbird.Payment
 
                     data.PaidAmount = amount;
 
-                    //check if a swipe card used reverse the transaction and cancel the transaction
-                    if (payResponse.EntryMethodOut == "2")
-                    {
-
-                        Log.Info("This transaction requires a signature. We will reverse it");
-                        var ReverseResult = api.Reverse(amount, out var ReverseResponse);
-
-                        Log.Info($"Reverse Response Data: { Utils.GetTransactionOutResult(ReverseResponse.TransactionStatusOut)}");
-
-                        //create customer error receipt
-                        //
-                        CreateCustomerTicket("-----\n\nPayment failure with\nyour card or issuer\nNO payment has been taken.\n\nPlease try again with another card,\nor at a manned till.\n\n-----");
-
-                        //persist the transaction for records
-                        PersistTransaction(ReverseResponse);
-
-                        data.PaidAmount = 0;
-                        data.HasClientReceipt = true;
-
-                        //cancel the transaction
-                        Log.Info("Cancelling the transaction");
-
-                        return new Result<PaymentData>(ResultCode.TransactionCancelled, data: data);
-
-                    }
-
                     //create customer receipt if successful
-                    if ((ECRUtilATLErrMsg)Convert.ToInt32(payResponse.DiagRequestOut) == ECRUtilATLErrMsg.OK)
+                    if ((DiagnosticErrMsg)Convert.ToInt32(payResponse.DiagRequestOut) == DiagnosticErrMsg.OK)
                     {
-                        Log.Info($"transaction status: {Utils.DiagTxnStatus(payResponse.TransactionStatusOut)}");
+                        Log.Info($"Transaction Status: { Utils.GetTransactionTypeString(Convert.ToInt16(payResponse.TransactionStatusOut))}");
 
                         if (Utils.GetTransactionOutResult(payResponse.TransactionStatusOut) == TransactionResult.Successful)
                         {
@@ -252,60 +227,56 @@ namespace Acrelec.Mockingbird.Payment
                 StringBuilder customerReceipt = new StringBuilder();
                 StringBuilder merchantReceipt = new StringBuilder();
 
-                //get the reponse details for the ticket
-                customerReceipt.Append($"\nCUSTOMER RECEIPT\n");
-                customerReceipt.Append($"________________\n\n");
-                customerReceipt.Append($"MERCHANT NAME:  {result.MerchantNameOut}\n");         
-                customerReceipt.Append($"MERCHANT ADDR1: {result.MerchantAddress1Out}\n");   
-                customerReceipt.Append($"MERCHANT ADDR2: {result.MerchantAddress2Out}\n");
-                customerReceipt.Append($"MERCHANT ADDR3: {result.MerchantAddress3Out}\n");
-                customerReceipt.Append($"MERCHANT ADDR4: {result.MerchantAddress4Out}\n");
-                customerReceipt.Append($"ACQUIRER MERCHANT ID: {result.AcquirerMerchantIDOut}\n");
-                customerReceipt.Append($"ENTRY METHOD: {Utils.CardEntryMethod(result.EntryMethodOut)}\n");
-                customerReceipt.Append($"TID: {result.TerminalIdentifierOut}\n");      
-                customerReceipt.Append($"AID: {result.AIDOut}\n");                 
-                customerReceipt.Append($"CARD SCHEME NAME: {result.CardSchemeNameOut}\n");     
-                customerReceipt.Append($"PAN: {result.PANOut}\n");              
-                customerReceipt.Append($"PAN SEQUNCE NUMBER : PAN.SEQ {result.PANsequenceNumberOut}\n");      
-                customerReceipt.Append($"TRANSACTION TYPE: {Utils.GetTransactionTypeString(Convert.ToInt32(result.TransactionTypeIn))}\n");
-                customerReceipt.Append($"Currency:{Utils.GetCurrencyCodeSymbol(Convert.ToInt32(result.TerminalCurrencyCodeOut))}\n");
-                customerReceipt.Append($"AMOUNT: {Utils.GetCurrencyCodeSymbol(Convert.ToInt32(result.TerminalCurrencyCodeOut))}{Utils.FormatReceiptAmount(result.TransactionAmount)}\n");  
-                customerReceipt.Append($"TOTAL AMOUNT: {Utils.FormatReceiptAmount(result.TotalAmountOut)}\n");   
-            //    customerReceipt.Append($"CVM: {Utils.CardVerification(result.CVM)}\n");
-                customerReceipt.Append($"HOST MESSAGE: {result.HostTextOut}\n");
-                customerReceipt.Append("_______________________\n");
-                customerReceipt.Append($"{Utils.DiagTxnStatus(result.TransactionStatusOut)}\n");
-                customerReceipt.Append("_______________________\n");
+                customerReceipt.Append($"CUSTOMER RECEIPT\n");
+                customerReceipt.Append($"=======================\n");
+                customerReceipt.Append($"Merchant Name: {result.MerchantNameOut}\n");
+                customerReceipt.Append($"Merchant Addr1: {result.MerchantAddress1Out}\n");
+                customerReceipt.Append($"Merchant Addr2: {result.MerchantAddress2Out}\n");
+                customerReceipt.Append($"Merchant Addr3: {result.MerchantAddress3Out}\n");
+                customerReceipt.Append($"Merchant Addr4: {result.MerchantAddress4Out}\n");
+                customerReceipt.Append($"Acquirer MerchantId: {result.AcquirerMerchantIDOut}\t");
+                customerReceipt.Append($"TID: {result.TerminalIdentifierOut}\n");
+                customerReceipt.Append($"Card Scheme Name: {result.CardSchemeNameOut}\n");
+                customerReceipt.Append($"AID: {result.AIDOut}\n");
+                customerReceipt.Append($"PAN: {result.PANOut}\n");
+                customerReceipt.Append($"PAN SEQ NUM:{result.PANSequenceNumberOut}\n");
+                customerReceipt.Append($"Entry Method: {Utils.GetEntryMethodString(result.EntryMethodOut)}\n");
+                customerReceipt.Append($"Transaction Type: {Utils.GetTransactionTypeString(Convert.ToInt16(result.TransactionStatusOut))}\n");
+                customerReceipt.Append("\nCARD HOLDER COPY\n");
+                customerReceipt.Append($"Currency: {Utils.GetCurrencySymbol(result.TerminalCurrencyCodeOut)}\n");
+                customerReceipt.Append($"Purchase Amount: {Utils.FormatReceiptAmount(result.TotalAmountOut)}\n");
+                customerReceipt.Append($"Date: {DateTime.Now.ToShortTimeString()} {DateTime.Now.ToShortDateString()}\n");
+                customerReceipt.Append($"Transaction Date/Time: {result.DateTimeOut}\n");
+                customerReceipt.Append("\nThank you\n");
+                customerReceipt.Append($"{result.HostTextOut}\n");          // Host Message
+                customerReceipt.Append("\n=====================\n");
+                customerReceipt.Append($"{Utils.TransactionOutResult(result.TransactionStatusOut)}\n");
+                customerReceipt.Append("=====================\n");
 
 
                 //get the reponse details for the ticket
                 merchantReceipt.Append($"\n\nMERCHANT RECEIPT\n");
                 merchantReceipt.Append($"================\n\n");
                 merchantReceipt.Append($"Acquirer Merchant ID: {result.AcquirerMerchantIDOut}\n");
-                merchantReceipt.Append($"MERCHANT NAME:  {result.MerchantNameOut}\n");
-                merchantReceipt.Append($"MERCHANT ADDR1: {result.MerchantAddress1Out}\n");
-                merchantReceipt.Append($"MERCHANT ADDR2: {result.MerchantAddress2Out}\n");
-                merchantReceipt.Append($"MERCHANT ADDR3: {result.MerchantAddress3Out}\n");
-                merchantReceipt.Append($"MERCHANT ADDR4: {result.MerchantAddress4Out}\n");
-                merchantReceipt.Append($"ENTRY METHOD: {Utils.CardEntryMethod(result.EntryMethodOut)}\n");
+                merchantReceipt.Append($"Merchant NAME:  {result.MerchantNameOut}\n");
+                merchantReceipt.Append($"Merchant ADDR1: {result.MerchantAddress1Out}\n");
+                merchantReceipt.Append($"Merchant ADDR2: {result.MerchantAddress2Out}\n");
+                merchantReceipt.Append($"Merchant ADDR3: {result.MerchantAddress3Out}\n");
+                merchantReceipt.Append($"Merchant ADDR4: {result.MerchantAddress4Out}\n");
+                merchantReceipt.Append($"Entry Method: {Utils.GetEntryMethodString(result.EntryMethodOut)}\n");
                 merchantReceipt.Append($"TID: {result.TerminalIdentifierOut}\n");
                 merchantReceipt.Append($"AID: {result.AIDOut}\n");
                 merchantReceipt.Append($"CARD SCHEME NAME: {result.CardSchemeNameOut}\n");
                 merchantReceipt.Append($"PAN: {result.PANOut}\n");
-                merchantReceipt.Append($"PAN SEQUENCE NUMBER : PAN.SEQ {result.PANsequenceNumberOut}\n");
-                merchantReceipt.Append($"TRANSACTION TYPE: {Utils.GetTransactionTypeString(Convert.ToInt32(result.TransactionTypeIn))}\n");
-                merchantReceipt.Append($"Currency: {Utils.GetCurrencyCodeSymbol(Convert.ToInt32(result.TerminalCurrencyCodeOut))}\n");
-                merchantReceipt.Append($"AMOUNT: {Utils.GetCurrencyCodeSymbol(Convert.ToInt32(result.TerminalCurrencyCodeOut))}{Utils.FormatReceiptAmount(result.TransactionAmount)}\n");
-                merchantReceipt.Append($"TOTAL AMOUNT: {Utils.FormatReceiptAmount(result.TotalAmountOut)}\n");
-                merchantReceipt.Append($"Transaction DATE TIME: {result.DateTimeOut}\n");
-             //   merchantReceipt.Append($"CVM: {Utils.CardVerification(result.CVM)}\n");
-                merchantReceipt.Append($"HOST MESSAGE: {result.HostTextOut}\n");
-                merchantReceipt.Append($"ACQUIRER RESPONSE CODE: {result.AcquirerResponseCodeOut}\n");
-                merchantReceipt.Append($"RECEIPT NUMBER: {result.ReceiptNumber}\n");
-                merchantReceipt.Append($"\nTRANSACTION STATUS OUT: \n");
-
-                merchantReceipt.Append("***********************\n");
-                merchantReceipt.Append($"{Utils.DiagTxnStatus(result.TransactionStatusOut)}\n");
+                merchantReceipt.Append($"PAN Sequence Number: {result.PANSequenceNumberOut}\n");
+                merchantReceipt.Append($"Transaction Type: {Utils.GetTransactionTypeString(Convert.ToInt16(result.TransactionStatusOut))}\n");
+                merchantReceipt.Append($"Currency: {Utils.GetCurrencySymbol(result.TerminalCurrencyCodeOut)}\n");
+                merchantReceipt.Append($"Total Amount: {Utils.FormatReceiptAmount(result.TotalAmountOut)}\n");
+                merchantReceipt.Append($"Transaction DateTime: {result.DateTimeOut}\n");
+                merchantReceipt.Append($"Host Message: {result.HostTextOut}\n");
+                merchantReceipt.Append($"Acquirer Response Code: {result.AcquirerResponseCodeOut}\n");
+                merchantReceipt.Append("\n***********************\n");
+                merchantReceipt.Append($"{Utils.TransactionOutResult(result.TransactionStatusOut)}\n");
                 merchantReceipt.Append("***********************\n");
 
                 Log.Info("Persisting Customer and Merchant ticket to {0}", outputPath);
@@ -355,26 +326,28 @@ namespace Acrelec.Mockingbird.Payment
             
             ticketContent.Append($"CUSTOMER RECEIPT\n");
             ticketContent.Append($"_______________________\n");
-            ticketContent.Append($"Merchant Name: {ticket.MerchantNameOut}\n");         // Merchant name
-            ticketContent.Append($"Merchant Addr1: {ticket.MerchantAddress1Out}\n");     // Merchant Addr1
-            ticketContent.Append($"Merchant Addr2: {ticket.MerchantAddress2Out}\n");     // Merchant Addr2
-            ticketContent.Append($"Acquirer MerchantId: {ticket.AcquirerMerchantIDOut}\t");   // Aquirer Merchant ID name
-            ticketContent.Append($"TID: {ticket.TerminalIdentifierOut}\n");           // Terminal ID
-            ticketContent.Append($"Card Scheme Name: {ticket.CardSchemeNameOut}\n");       // Card Schema name
-            ticketContent.Append($"AID: {ticket.AIDOut}\n");                  // AID
-            ticketContent.Append($"PAN: {ticket.PANOut}\n");                  // Pan
-            ticketContent.Append($"{ticket.PANsequenceNumberOut}\n");            // Pan Seq num
-            ticketContent.Append($"Entry Method: {Utils.CardEntryMethod(ticket.EntryMethodOut)}\n");
-            ticketContent.Append($"{Utils.GetTransactionTypeString(Convert.ToInt32(ticket.TransactionTypeIn))}\n");      // Transaction Type
+            ticketContent.Append($"Merchant Name: {ticket.MerchantNameOut}\n");         
+            ticketContent.Append($"Merchant Addr1: {ticket.MerchantAddress1Out}\n");   
+            ticketContent.Append($"Merchant Addr2: {ticket.MerchantAddress2Out}\n");     
+            ticketContent.Append($"Acquirer MerchantId: {ticket.AcquirerMerchantIDOut}\t");   
+            ticketContent.Append($"TID: {ticket.TerminalIdentifierOut}\n");             
+            ticketContent.Append($"Card Scheme Name: {ticket.CardSchemeNameOut}\n");       
+            ticketContent.Append($"AID: {ticket.AIDOut}\n");                   
+            ticketContent.Append($"PAN: {ticket.PANOut}\n");                         
+            ticketContent.Append($"PAN SEQ NUM:{ticket.PANSequenceNumberOut}\n");      
+            ticketContent.Append($"Entry Method: {Utils.GetEntryMethodString(ticket.EntryMethodOut)}\n");
+            ticketContent.Append($"Transaction Type: {Utils.GetTransactionTypeString(Convert.ToInt16(ticket.TransactionStatusOut))}\n");   
             ticketContent.Append("\nCARD HOLDER COPY\n");
-            ticketContent.Append($"PURCHASE AMOUNT: {Utils.GetCurrencyCodeSymbol(Convert.ToInt32(ticket.TerminalCurrencyCodeOut))}{Utils.FormatReceiptAmount(ticket.TransactionAmount)}\n");    //Amount
+            ticketContent.Append($"Currency: {Utils.GetCurrencySymbol(ticket.TerminalCurrencyCodeOut)}\n");
+            ticketContent.Append($"Purchase Amount: {Utils.FormatReceiptAmount(ticket.TotalAmountOut)}\n");         
             ticketContent.Append($"Date: {DateTime.Now.ToShortTimeString()} {DateTime.Now.ToShortDateString()}\n");
             ticketContent.Append($"Transaction Date/Time: {ticket.DateTimeOut}\n");
-            ticketContent.Append("\nTHANK YOU\n");
+            ticketContent.Append("\nThank you\n");
             ticketContent.Append($"{ticket.HostTextOut}\n");          // Host Message
             ticketContent.Append("\n_______________________\n");
-            ticketContent.Append($"{Utils.DiagTxnStatus(ticket.TransactionStatusOut)}\n");
+            ticketContent.Append($"Order: {Utils.TransactionOutResult(ticket.TransactionStatusOut)}\n");
             ticketContent.Append("_______________________\n");
+
 
             try
             {

@@ -53,7 +53,7 @@ namespace Acrelec.Mockingbird.Payment
                 using (var api = new ECRUtilATLApi())
                 {
                     var connectResult = api.Connect(configuration.IpAddress);
-                    if (connectResult != ECRUtilATLErrMsg.OK)
+                    if (connectResult != DiagnosticErrMsg.OK)
                     {
                         Alive = false;
                         Log.Debug($"Connect result: {connectResult}");
@@ -61,7 +61,7 @@ namespace Acrelec.Mockingbird.Payment
                     }
 
                     var disconnectResult = api.Disconnect();
-                    if (disconnectResult != ECRUtilATLErrMsg.OK)
+                    if (disconnectResult != DiagnosticErrMsg.OK)
                     {
                         Alive = false;
                         Log.Debug($"Disconnect result: {disconnectResult}");

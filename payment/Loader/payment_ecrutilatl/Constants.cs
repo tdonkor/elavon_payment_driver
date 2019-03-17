@@ -14,7 +14,7 @@ namespace Acrelec.Mockingbird.Payment
 
         public const string LOG_FILE = "Payment_uk_elavon_ecrutilatl";
 
-        public const string PAYMENT_APPLICATION_NAME = "PAY_UK_BARCLAYS_ECRUTILATL.exe";
+        public const string PAYMENT_APPLICATION_NAME = "PAY_UK_ELAVON_ECRUTILATL.exe";
 
         public const string DRIVER_FOLDER_NAME = "DriverExe";
     }

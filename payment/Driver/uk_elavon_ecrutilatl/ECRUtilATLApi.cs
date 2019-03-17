@@ -5,22 +5,22 @@ using Acrelec.Library.Logger;
 using ECRUtilATLLib;
 
 
+
+
 namespace Acrelec.Mockingbird.Payment
 {
     public class ECRUtilATLApi: IDisposable
     {
         TerminalIPAddress termimalIPAddress;
-        StatusClass termimalStatus;
+        TerminalEvent terminalEvent;
         InitTxnReceiptPrint initTxnReceiptPrint;
+        TimeDate pedDateTime;
+        Status pedStatus;
         TransactionClass transaction;
-        TimeDateClass timeDate;
         TransactionResponse transactionResponse;
-        SignatureClass checkSignature;
-        VoiceReferralClass checkVoiceReferral;
+        Signature checkSignature;
         Thread SignatureVerificationThread;
-        Thread VoiceReferralThread;
-     //   SettlementClass getSettlement;
-     //   SettlementRequest settlementRequest;
+        ECRUtilATLLib.Settlement getSettlement;
 
 
         /// <summary>
@@ -38,71 +38,54 @@ namespace Acrelec.Mockingbird.Payment
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool FreeLibrary(IntPtr hModule);
 
-        /// <summary>
-        /// Check the prerequistes have been set:
-        /// IP Address is called
-        /// Status is at IDLE
-        /// Disable the printing to print from the Transaction response
-        /// </summary>
-        /// <returns></returns>
-        public ECRUtilATLErrMsg Connect(string ipAddress)
+        public DiagnosticErrMsg Connect(string ipAddress)
         {
-            //set static IP address
-            termimalIPAddress = new TerminalIPAddress();
-            termimalIPAddress.IPAddressIn = ipAddress;
-            termimalIPAddress.SetIPAddress();
 
-            //check the output IPAddress
-            Log.Info($"IpAddress output = {termimalIPAddress.IPAddressOut}");
+            DiagnosticErrMsg diagErr = DiagnosticErrMsg.OK;
 
-            // check the status is at IDLE
-            string status = string.Empty;
-            termimalStatus = new StatusClass();
-            termimalStatus.GetTerminalState();
-            Log.Info($"Check Terminal at Idle: {Utils.DisplayTerminalStatus(Convert.ToInt16(termimalStatus.StateOut))}");
+            //Check IP Address
+            diagErr = CheckIPAddress(ipAddress);
+            if (diagErr != DiagnosticErrMsg.OK) return diagErr;
 
-            // disable the receipt Printing
-            initTxnReceiptPrint = new InitTxnReceiptPrint();
-            initTxnReceiptPrint.StatusIn = (short)TxnReceiptState.TXN_RECEIPT_DISABLED;
-            initTxnReceiptPrint.SetTxnReceiptPrintStatus();
+            //Check ECR Server
+            diagErr = CheckECRServer();
+            if (diagErr != DiagnosticErrMsg.OK) return diagErr;
 
-            //check printing disabled
-            if (initTxnReceiptPrint.DiagRequestOut == 0)
-                Log.Info("apiInitTxnReceiptPrint OFF");
-            else
-                Log.Info("apiInitTxnReceiptPrint ON");
+            //Check Reciept status
+            diagErr = CheckReceiptInit();
+            if (diagErr != DiagnosticErrMsg.OK) return diagErr;
 
-            //Set the time 
-            timeDate = new TimeDateClass();
-            timeDate.YearIn = DateTime.Now.Year.ToString();
-            timeDate.MonthIn = DateTime.Now.Month.ToString();
-            timeDate.DayIn = DateTime.Now.Day.ToString();
-            timeDate.HourIn = DateTime.Now.Hour.ToString();
-            timeDate.MinuteIn = DateTime.Now.Minute.ToString();
-            timeDate.SecondIn = DateTime.Now.Second.ToString();
+            //Check the status
+            diagErr = CheckStatus();
+            if (diagErr != DiagnosticErrMsg.OK) return diagErr;
 
-            timeDate.SetTimeDate();
+            //set the PED timeDate
+            diagErr = SetTimeDate();
+            if (diagErr != DiagnosticErrMsg.OK) return diagErr;
 
-            //check the connection result 
-            return (ECRUtilATLErrMsg)Convert.ToInt32(termimalIPAddress.DiagRequestOut);
+            //no error
+            return diagErr;
         }
 
-       
+
 
         /// <summary>
         /// Disconect the transaction
         /// </summary>
-        public ECRUtilATLErrMsg Disconnect()
+        public DiagnosticErrMsg Disconnect()
         {
-            Log.Info("Disconnecting...Reset the transaction");
-          //  transaction.Reset();
+            Log.Info("Disconnecting...Stop the ECR Server");
 
-            ECRUtilATLErrMsg disconnResult = ECRUtilATLErrMsg.UknownValue;
+            //check server is not running.
+            terminalEvent.StopServer();
+            Log.Info($"\nTerminal Stop Check: {Utils.GetDiagRequestString(terminalEvent.DiagRequestOut)}");
 
-            if ((ECRUtilATLErrMsg)Convert.ToInt32(transactionResponse.DiagRequestOut) == ECRUtilATLErrMsg.OK)
-                disconnResult = ECRUtilATLErrMsg.OK;
+            DiagnosticErrMsg disconnResult = DiagnosticErrMsg.UknownValue;
+
+            if ((DiagnosticErrMsg)Convert.ToInt16(transactionResponse.DiagRequestOut) == DiagnosticErrMsg.OK)
+                disconnResult = DiagnosticErrMsg.OK;
             else
-                disconnResult = ECRUtilATLErrMsg.UknownValue;
+                disconnResult = DiagnosticErrMsg.UknownValue;
 
             return disconnResult;
 
@@ -114,7 +97,7 @@ namespace Acrelec.Mockingbird.Payment
         /// <param name="amount"></param>
         /// <param name="result"></param>
         /// <returns></returns>
-        public ECRUtilATLErrMsg Pay(int amount, out TransactionResponse result)
+        public DiagnosticErrMsg Pay(int amount, out TransactionResponse result)
         {
             int intAmount;
             Log.Info($"Executing payment - Amount: {amount/100.0}");
@@ -130,32 +113,10 @@ namespace Acrelec.Mockingbird.Payment
             DoTransaction(amount, TransactionType.Sale.ToString());
 
             result = PopulateResponse(transaction);
-            return (ECRUtilATLErrMsg)Convert.ToInt32(transaction.DiagRequestOut);
+            return (DiagnosticErrMsg)Convert.ToInt32(transaction.DiagRequestOut);
         }
 
-        /// <summary>
-        /// Payment Reversal
-        /// </summary>
-        /// <param name="amount"></param>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        public ECRUtilATLErrMsg Reverse(int amount, out TransactionResponse result)
-        {
-            int intAmount;
-            Log.Info($"Executing Reversal - Amount: {amount/100.0}");
 
-            //check amount is valid
-            intAmount = Utils.GetNumericAmountValue(amount);
-
-            if (intAmount == 0)
-                throw new Exception("Error in input");
-           
-            DoTransaction(amount, TransactionType.Reversal.ToString());
-            result = PopulateResponse(transaction);
-
-            return (ECRUtilATLErrMsg)Convert.ToInt32(transaction.DiagRequestOut);
-
-        }
 
         /// <summary>
         /// End of day report
@@ -163,26 +124,21 @@ namespace Acrelec.Mockingbird.Payment
         /// <param name="amount"></param>
         /// <param name="result"></param>
         /// <returns></returns>
-        //public SettlementClass EndOfDayReport()
-        //{
-        //    Log.Info("Printing end of day report...");
+        public ECRUtilATLLib.Settlement EndOfDayReport()
+        {
+            Log.Info("Printing end of day report...");
+            
+            getSettlement = new ECRUtilATLLib.Settlement();
 
-        //    // Get Acquirer List
-        //    // getAcquirerList.Launch();
+            // do the settlement
+            getSettlement.MessageNumberIn = transaction.MessageNumberOut;
+            getSettlement.DoSettlement();
 
-        //    getSettlement = new SettlementClass();
-        //    settlementRequest = new SettlementRequest();
+            if ((DiagnosticErrMsg)(Convert.ToInt16(getSettlement.DiagRequestOut)) == DiagnosticErrMsg.OK)
+                return getSettlement;
+            else return null;
+        }
 
-        //    // do the settlement
-        //    getSettlement.AcquirerIndexIn = settlementRequest.AcquirerIndex;
-        //    getSettlement.SettlementParamIn = (short)settlementRequest.SettlementParameter;
-        //    getSettlement.DoSettlement();
-
-        //    if ((ECRUtilATLErrMsg)(Convert.ToInt32(getSettlement.DiagRequestOut)) == ECRUtilATLErrMsg.OK)
-        //        return getSettlement;
-        //    else return null;
-        //}
- 
 
         /// <summary>
         ///  Do the transaction
@@ -192,23 +148,19 @@ namespace Acrelec.Mockingbird.Payment
         public void DoTransaction(int amount, string transactionType)
         {
             Random randomNum = new Random();
-            Log.Info($"Selected Transaction type:{Utils.GetSelectedTransaction(transactionType).ToString()}");
-          
+            Log.Info($"Selected Transaction type:{Utils.GetTransactionTypeString(Convert.ToInt16(transactionType))}");
+
+
             transaction.MessageNumberIn = randomNum.Next(100).ToString();
-            transaction.TransactionTypeIn = Utils.GetSelectedTransaction(transactionType).ToString();
+            transaction.TransactionTypeIn = Utils.GetTransactionTypeString(Convert.ToInt16(transactionType));
             transaction.Amount1In = amount.ToString();
             transaction.Amount1LabelIn = "Amount1";
-
-          
+            
 
             //set signature verification
-            SignatureVerificationThread = new Thread(SignatureVerification);
+            SignatureVerificationThread = new Thread(CheckSignatureVerification);
             SignatureVerificationThread.Start();
-
-            VoiceReferralThread = new Thread(VoiceReferralAuthorisation);
-            VoiceReferralThread.Start();
-
-            
+ 
             // Launches the transaction
             transaction.DoTransaction();
 
@@ -228,118 +180,214 @@ namespace Acrelec.Mockingbird.Payment
             catch (Exception ThreadException) { Log.Error(ThreadException.StackTrace); }
             SignatureVerificationThread = null;
 
-            // Trying to abort the voice referral authorisation thread if it is alive
-            try { VoiceReferralThread.Abort(); }
-            catch (Exception ThreadException) { Log.Error(ThreadException.StackTrace); }
-            VoiceReferralThread = null;
 
             Log.Info($"Transaction Card scheme out: {transaction.CardSchemeNameOut}");
-            Log.Info($"Transaction Entry Method out:{Utils.CardEntryMethod(transaction.EntryMethodOut)}");
-            Log.Info($"Transaction Total amount: £{Convert.ToSingle(transaction.TotalAmountOut)/100.0}");
+            Log.Info($"Transaction Entry Method out:{Utils.GetEntryMethodString(transaction.EntryMethodOut)}");
+            Log.Info($"Currency: {Utils.GetCurrencySymbol(transaction.TerminalCurrencyCodeOut)}");
+            Log.Info($"Transaction Total amount: {Convert.ToSingle(transaction.TotalAmountOut)/100.0}");
             Log.Info($"Transaction Terminal Identity out: {transaction.TerminalIdentifierOut}");           
         }
 
         /// <summary>
-        /// Verify Signature
+        /// Verify if a Signature is needed 
+        /// then Void the transaction if it is
         /// </summary>
-        public void SignatureVerification()
+        public void CheckSignatureVerification()
         {
-            //local variables
-            int ret = 0;
-            string CheckSignatureStatus = string.Empty;
+            checkSignature = new ECRUtilATLLib.Signature();
 
-            checkSignature = new SignatureClass();
-            checkSignature.GetSignatureData();
+            Log.Info("Running Check Signature - call the wait terminal event");
 
-            Log.Info("Running Check Signature");
-            
-            ret = checkSignature.DiagRequestOut;
-            Log.Info($" checkSignature = {ret}");
+            terminalEvent.WaitTerminalEvent();
+            Log.Info($"Terminal Event = {terminalEvent.EventIdentifierOut}");
 
-            //switch (ret)
-            //{
-            //    case 0: CheckSignatureStatus = "Signature In Progress"; break; // RET_OK
-            //    case 1: CheckSignatureStatus = "Server Down"; break;           // RET_SIGN_SERVER_DOWN
-            //    case 2: CheckSignatureStatus = "Timeout"; break;               // RET_TIMEOUT
-            //    case 3: CheckSignatureStatus = "Bad Request Size"; break;      // RET_BAD_REQUEST_SIZE
-            //    case 4: CheckSignatureStatus = "Bad Request Format"; break;    // RET_BAD_REQUEST_FORMAT
-            //    case 8: CheckSignatureStatus = "Ped Not Auth"; break;          // RET_PED_NOT_AUTHENTICATED
-            //    default:CheckSignatureStatus = "Unknown Status"; break;       // Unknown Status
-            //}
+            //void the signature if set
+            checkSignature.SignatureStatusIn = 0x00; /* SIGN_NOT_ACCEPTED */
+            checkSignature.SetSignStatus();
 
-            if (ret != 0) //Error Case
-            {
-                Log.Error("Error in CheckSignature return ");
-            }
-            else
-            {
-                //set the signature Status
-                checkSignature.SignatureStatusIn = 2; //assign
-                checkSignature.SetSignStatus();
-                Log.Info($" SetSignStatus = {checkSignature.DiagRequestOut}");
-            }            
-        }
+            Log.Info($"Signature status : {checkSignature.DiagRequestOut}");
 
 
-        public void VoiceReferralAuthorisation()
-        {
-
-            checkVoiceReferral = new VoiceReferralClass();
-            checkVoiceReferral.GetVoiceReferralData();
-            Log.Info($"checkVoiceReferral out: {checkVoiceReferral.DiagRequestOut}");
-
-            //decline the voice referral 
-            checkVoiceReferral.AuthorisationStatusIn = 1; // Decline
-            checkVoiceReferral.AuthorisationCodeIn = "";
-            checkVoiceReferral.SetAuthorisation();
-            checkVoiceReferral = null;
         }
 
         /// <summary>
-        /// Populate the transaction response Object
+        /// Set the Ped Date/Time
+        /// </summary>
+        /// <returns>diagnostic value</returns>
+        private DiagnosticErrMsg SetTimeDate()
+        {
+            //Set the PED Date time inputs
+            pedDateTime = new TimeDate();
+            pedDateTime.YearIn = DateTime.Now.Year.ToString();
+            pedDateTime.MonthIn = DateTime.Now.Month.ToString();
+            pedDateTime.DayIn = DateTime.Now.Day.ToString();
+            pedDateTime.HourIn = DateTime.Now.Hour.ToString();
+            pedDateTime.MinuteIn = DateTime.Now.Minute.ToString();
+            pedDateTime.SecondIn = DateTime.Now.Second.ToString();
+
+            //check the connection result 
+            return (DiagnosticErrMsg)(pedDateTime.DiagRequestOut);
+        }
+
+        /// <summary>
+        /// Check the PED Status
+        /// </summary>
+        /// <returns>Diagnostic value</returns>
+        private DiagnosticErrMsg CheckStatus()
+        {
+            //Check status at Idle
+            pedStatus = new Status();
+            pedStatus.GetTerminalState();
+            Log.Info($"Status: {Utils.DisplayTerminalStatus(pedStatus.StateOut)}");
+
+            //check the connection result 
+            return (DiagnosticErrMsg)(pedStatus.DiagRequestOut);
+        }
+
+        /// <summary>
+        /// Disable reciept printing
+        /// </summary>
+        /// <returns>Diagnostic value</returns>
+        private DiagnosticErrMsg CheckReceiptInit()
+        {
+            // disable the receipt Printing
+            initTxnReceiptPrint = new InitTxnReceiptPrint();
+            initTxnReceiptPrint.StatusIn = (short)TxnReceiptState.TXN_RECEIPT_DISABLED;
+            initTxnReceiptPrint.SetTxnReceiptPrintStatus();
+
+            //check printing disabled
+            if (initTxnReceiptPrint.DiagRequestOut == 0)
+                Log.Info("apiInitTxnReceiptPrint OFF");
+            else
+                Log.Info("apiInitTxnReceiptPrint ON");
+
+            //check the connection result 
+            return (DiagnosticErrMsg)(initTxnReceiptPrint.DiagRequestOut);
+        }
+
+        /// <summary>
+        /// Check ECR Server is running
+        /// </summary>
+        /// <returns>Diagnostic value</returns>
+        private DiagnosticErrMsg CheckECRServer()
+        {
+            //Set the Event Server 
+            terminalEvent = new TerminalEvent();
+
+            // Start the ECR server
+            terminalEvent.StartServer();
+
+            terminalEvent.GetServerState();
+            Log.Info($"Terminal Start Check: {Utils.GetDiagRequestString(terminalEvent.DiagRequestOut)}");
+            //check the connection result 
+            return (DiagnosticErrMsg)(terminalEvent.DiagRequestOut);
+        }
+
+        /// <summary>
+        /// Check the IP Address
+        /// </summary>
+        /// <param name="ipAddress"></param>
+        /// <returns>Diagnostic value</returns>
+        private DiagnosticErrMsg CheckIPAddress(string ipAddress)
+        {
+            //set static IP address
+            termimalIPAddress = new TerminalIPAddress();
+            termimalIPAddress.IPAddressIn = ipAddress;
+            termimalIPAddress.SetIPAddress();
+            Log.Info($"IP Address Out: {termimalIPAddress.IPAddressOut}");
+
+            //check the connection result 
+            return (DiagnosticErrMsg)(termimalIPAddress.DiagRequestOut);
+        }
+
+       
+
+        /// <summary>
+        /// Populate the transactionResponse object
         /// </summary>
         /// <param name="transaction"></param>
-        /// <returns>transactionResponse</returns>
-        private TransactionResponse PopulateResponse(TransactionClass transaction)
+        /// <returns>the transaction response</returns>
+        private TransactionResponse PopulateResponse(Transaction transaction)
         {
             Log.Info("Populating Transaction Response");
-
+            /* Set the transaction output */
+            transactionResponse.MessageNumberOut = transaction.MessageNumberOut;
+            transactionResponse.TransactionStatusOut = transaction.TransactionStatusOut;
+            transactionResponse.EntryMethodOut = transaction.EntryMethodOut;
             transactionResponse.AcquirerMerchantIDOut = transaction.AcquirerMerchantIDOut;
-            transactionResponse.AcquirerNameOut = transaction.AcquirerNameOut;
+            transactionResponse.DateTimeOut = transaction.DateTimeOut;
+            transactionResponse.CardSchemeNameOut = transaction.CardSchemeNameOut;
+            transactionResponse.PANOut = transaction.PANOut;
+            transactionResponse.StartDateOut = transaction.StartDateOut;
+            transactionResponse.ExpiryDateOut = transaction.ExpiryDateOut;
+            transactionResponse.AuthorisationCodeOut = transaction.AuthorisationCodeOut;
+            transactionResponse.AcquirerResponseCodeOut = transaction.AcquirerResponseCodeOut;
+            transactionResponse.MerchantNameOut = transaction.MerchantNameOut;
             transactionResponse.MerchantAddress1Out = transaction.MerchantAddress1Out;
             transactionResponse.MerchantAddress2Out = transaction.MerchantAddress2Out;
             transactionResponse.MerchantAddress3Out = transaction.MerchantAddress3Out;
             transactionResponse.MerchantAddress4Out = transaction.MerchantAddress4Out;
-            transactionResponse.MerchantNameOut = transaction.MerchantNameOut;
-            transactionResponse.AcquirerResponseCodeOut = transaction.AcquirerResponseCodeOut;
-            transactionResponse.AuthorisationCodeOut = transaction.AuthorisationCodeOut;
-            transactionResponse.CardSchemeNameOut = transaction.CardSchemeNameOut;
             transactionResponse.TransactionCurrencyCodeOut = transaction.TransactionCurrencyCodeOut;
+            transactionResponse.TransactionCurrencyExpOut = transaction.TransactionCurrencyExponentOut;
             transactionResponse.CardCurrencyCodeOut = transaction.CardCurrencyCodeOut;
-            transactionResponse.DateTimeOut = transaction.DateTimeOut;
-            transactionResponse.EntryMethodOut = transaction.EntryMethodOut;
-            transactionResponse.ExpiryDateOut = transaction.ExpiryDateOut;
-            transactionResponse.MessageNumberOut= transaction.MessageNumberOut;
-            transactionResponse.PANOut = transaction.PANOut;
-            transactionResponse.AIDOut = transaction.AIDOut;
-            transactionResponse.PANsequenceNumberOut = transaction.PANSequenceNumberOut;
-            transactionResponse.DateTimeOut = transaction.StartDateOut;
-            transactionResponse.TerminalIdentifierOut = transaction.TerminalIdentifierOut;
+            transactionResponse.CardCurrencyExpOut = transaction.CardCurrencyExponentOut;
             transactionResponse.TotalAmountOut = transaction.TotalAmountOut;
+            transactionResponse.AdditionalAmountOut = transaction.AdditionalAmountOut;
+            transactionResponse.EMVCardExpiryDateOut = transaction.EMVCardExpirationDateOut;
+            transactionResponse.AppEffectiveDateOut = transaction.AppEffectiveDateOut;
+            transactionResponse.AIDOut = transaction.AIDOut;
+            transactionResponse.AppPreferredNameOut = transaction.AppPreferredNameOut;
+            transactionResponse.AppLabelOut = transaction.AppLabelOut;
+            transactionResponse.TerminalIdentifierOut = transaction.TerminalIdentifierOut;
+            transactionResponse.EMVTransactionTypeOut = transaction.EMVTransactionTypeOut;
+            transactionResponse.AppCryptogramOut = transaction.AppCryptogramOut;
+            transactionResponse.RetrievalReferenceNumOut = transaction.RetrievalReferenceNumberOut;
+            transactionResponse.InvoiceNumberOut = transaction.InvoiceNumberOut;
+            transactionResponse.BatchNumberOut = transaction.BatchNumberOut;
+            transactionResponse.AcquirerNameOut = transaction.AcquirerNameOut;
+            transactionResponse.CustomLine1Out = transaction.CustomLine1Out;
+            transactionResponse.CustomLine2Out = transaction.CustomLine2Out;
+            transactionResponse.CustomLine3Out = transaction.CustomLine3Out;
+            transactionResponse.CustomLine4Out = transaction.CustomLine4Out;
             transactionResponse.IsDCCTransactionOut = transaction.IsDCCTransactionOut;
             transactionResponse.DCCAmountOut = transaction.DCCAmountOut;
-            transactionResponse.IsDCCTransactionOut = transaction.IsDCCTransactionOut;
+            transactionResponse.ConversionRateOut = transaction.ConversionRateOut;
             transactionResponse.FXExponentAppliedOut = transaction.FXExponentAppliedOut;
-            transactionResponse.LoyaltyTransactionInfoOut = transaction.LoyaltyTransactionInfoOut;
-            transactionResponse.DonationAmountOut = transaction.DonationAmountOut;
-            transactionResponse.InvoiceNumberOut = transaction.InvoiceNumberOut;
+            transactionResponse.CommissionOut = transaction.CommissionOut;
+            transactionResponse.TerminalCountryCodeOut = transaction.TerminalCountryCodeOut;
+            transactionResponse.TerminalCurrencyCodeOut = transaction.TerminalCurrencyCodeOut;
+            transactionResponse.TerminalCurrencyExpOut = transaction.TerminalCurrencyExponentOut;
+            transactionResponse.FXMarkupOut = transaction.FXMarkupOut;
+            transactionResponse.PANSequenceNumberOut = transaction.PANSequenceNumberOut;
+            transactionResponse.CashierIDOut = transaction.CashierIdentifierOut;
+            transactionResponse.TableIdentifierOut = transaction.TableIdentifierOut;
+            transactionResponse.CardholderNameOut = transaction.CardholderNameOut;
+            transactionResponse.AvailableBalanceOut = transaction.AvailableBalanceOut;
+            transactionResponse.PreAuthRefNumOut = transaction.PreAuthRefNumOut;
             transactionResponse.HostTextOut = transaction.HostTextOut;
-            transactionResponse.IsFanfareTransactionOut = transaction.IsFanfareTransactionOut;
-            transactionResponse.DiagRequestOut = transaction.DiagRequestOut;
-            transactionResponse.TransactionCurrencyCodeOut = transaction.TransactionCurrencyCodeOut;
-            transactionResponse.TransactionStatusOut = transaction.TransactionStatusOut;
+            transactionResponse.IsTaxFreeRequiredOut = transaction.IsTaxFreeRequiredOut;
+            transactionResponse.IsExchangeRateUpdateRequiredOut = transaction.IsExchangeRateUpdateRequiredOut;
+            transactionResponse.ApplicationIDOut = transaction.ApplicationIDOut;
+            transactionResponse.CommercialCodeDataOut = transaction.CommercialCodeDataOut;
+            transactionResponse.CardResponseValueOut = transaction.CardResponseValueOut;
+            transactionResponse.DonationAmountOut = transaction.DonationAmountOut;
+            transactionResponse.AVSResponseOut = transaction.AVSResponseOut;
+            transactionResponse.PartialAuthAmountOut = transaction.PartialAuthAmountOut;
+            transactionResponse.SpanishOpNumberOut = transaction.SpanishOpNumberOut;
             transactionResponse.IsSignatureRequiredOut = transaction.IsSignatureRequiredOut;
-         
+            transactionResponse.IsFanfareTransactionOut = transaction.IsFanfareTransactionOut;
+            transactionResponse.LoyaltyTransactionInfoOut = transaction.LoyaltyTransactionInfoOut;
+            transactionResponse.FanfareTransactionIdentifierOut = transaction.FanfareTransactionIdentifierOut;
+            transactionResponse.FanfareApprovalCodeOut = transaction.FanfareApprovalCodeOut;
+            transactionResponse.LoyaltyDiscountAmountOut = transaction.LoyaltyDiscountAmountOut;
+            transactionResponse.FanfareWebURLOut = transaction.FanfareWebURLOut;
+            transactionResponse.LoyaltyProgramNameOut = transaction.LoyaltyProgramNameOut;
+            transactionResponse.FanfareIdentifierOut = transaction.FanfareIdentifierOut;
+            transactionResponse.LoyaltyAccessCodeOut = transaction.LoyaltyAccessCodeOut;
+            transactionResponse.LoyaltyMemberTypeOut = transaction.LoyaltyMemberTypeOut;
+            transactionResponse.FanfareBalanceCountOut = transaction.FanfareBalanceCountOut;
+            transactionResponse.LoyaltyPromoCodeCountOut = transaction.LoyaltyPromoCodeCountOut;
+            transactionResponse.DiagRequestOut = transaction.DiagRequestOut;
 
             return transactionResponse;
         }
