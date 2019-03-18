@@ -12,15 +12,15 @@ namespace Acrelec.Mockingbird.Payment
     public class ECRUtilATLApi: IDisposable
     {
         TerminalIPAddress termimalIPAddress;
-        TerminalEvent terminalEvent;
+        TerminalEventClass terminalEvent;
         InitTxnReceiptPrint initTxnReceiptPrint;
         TimeDate pedDateTime;
         Status pedStatus;
         TransactionClass transaction;
         TransactionResponse transactionResponse;
-        Signature checkSignature;
+        SignatureClass checkSignature;
         Thread SignatureVerificationThread;
-        ECRUtilATLLib.Settlement getSettlement;
+        SettlementClass getSettlement;
 
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace Acrelec.Mockingbird.Payment
             Log.Info("Disconnecting...Stop the ECR Server");
 
             //check server is not running.
-            terminalEvent.StopServer();
+            //terminalEvent.StopServer();
             Log.Info($"\nTerminal Stop Check: {Utils.GetDiagRequestString(terminalEvent.DiagRequestOut)}");
 
             DiagnosticErrMsg disconnResult = DiagnosticErrMsg.UknownValue;
@@ -100,7 +100,7 @@ namespace Acrelec.Mockingbird.Payment
         public DiagnosticErrMsg Pay(int amount, out TransactionResponse result)
         {
             int intAmount;
-            Log.Info($"Executing payment - Amount: {amount/100.0}");
+            Log.Info($"Executing payment - Amount: {amount}");
 
             //check amount is valid
             intAmount = Utils.GetNumericAmountValue(amount);
@@ -113,7 +113,7 @@ namespace Acrelec.Mockingbird.Payment
             DoTransaction(amount, TransactionType.Sale.ToString());
 
             result = PopulateResponse(transaction);
-            return (DiagnosticErrMsg)Convert.ToInt32(transaction.DiagRequestOut);
+            return (DiagnosticErrMsg)Convert.ToInt16(transaction.DiagRequestOut);
         }
 
 
@@ -124,11 +124,11 @@ namespace Acrelec.Mockingbird.Payment
         /// <param name="amount"></param>
         /// <param name="result"></param>
         /// <returns></returns>
-        public ECRUtilATLLib.Settlement EndOfDayReport()
+        public SettlementClass EndOfDayReport()
         {
             Log.Info("Printing end of day report...");
             
-            getSettlement = new ECRUtilATLLib.Settlement();
+            getSettlement = new SettlementClass();
 
             // do the settlement
             getSettlement.MessageNumberIn = transaction.MessageNumberOut;
@@ -147,20 +147,20 @@ namespace Acrelec.Mockingbird.Payment
         /// <param name="transactionType"></param>
         public void DoTransaction(int amount, string transactionType)
         {
-            Random randomNum = new Random();
-            Log.Info($"Selected Transaction type:{Utils.GetTransactionTypeString(Convert.ToInt16(transactionType))}");
+            //Random randomNum = new Random();
+            //Log.Info($"Selected Transaction type:{Utils.GetTransactionTypeString(Convert.ToInt16(transactionType))}");
 
 
-            transaction.MessageNumberIn = randomNum.Next(100).ToString();
-            transaction.TransactionTypeIn = Utils.GetTransactionTypeString(Convert.ToInt16(transactionType));
-            transaction.Amount1In = amount.ToString();
-            transaction.Amount1LabelIn = "Amount1";
-            
+            transaction.MessageNumberIn = "12";// randomNum.Next(100).ToString();
+            transaction.Amount1In = amount.ToString().PadLeft(12, '0');
+            transaction.Amount1LabelIn = "AMOUNT";
+            transaction.TransactionTypeIn = "0";
 
-            //set signature verification
+
+            //catch signature event and void it
             SignatureVerificationThread = new Thread(CheckSignatureVerification);
             SignatureVerificationThread.Start();
- 
+
             // Launches the transaction
             transaction.DoTransaction();
 
@@ -181,11 +181,11 @@ namespace Acrelec.Mockingbird.Payment
             SignatureVerificationThread = null;
 
 
-            Log.Info($"Transaction Card scheme out: {transaction.CardSchemeNameOut}");
-            Log.Info($"Transaction Entry Method out:{Utils.GetEntryMethodString(transaction.EntryMethodOut)}");
-            Log.Info($"Currency: {Utils.GetCurrencySymbol(transaction.TerminalCurrencyCodeOut)}");
-            Log.Info($"Transaction Total amount: {Convert.ToSingle(transaction.TotalAmountOut)/100.0}");
-            Log.Info($"Transaction Terminal Identity out: {transaction.TerminalIdentifierOut}");           
+            //Log.Info($"Transaction Card scheme out: {transaction.CardSchemeNameOut}");
+            //Log.Info($"Transaction Entry Method out:{Utils.GetEntryMethodString(transaction.EntryMethodOut)}");
+            //Log.Info($"Currency: {Utils.GetCurrencySymbol(transaction.TerminalCurrencyCodeOut)}");
+            //Log.Info($"Transaction Total amount: {Convert.ToSingle(transaction.TotalAmountOut)/100.0}");
+            //Log.Info($"Transaction Terminal Identity out: {transaction.TerminalIdentifierOut}");           
         }
 
         /// <summary>
@@ -194,7 +194,7 @@ namespace Acrelec.Mockingbird.Payment
         /// </summary>
         public void CheckSignatureVerification()
         {
-            checkSignature = new ECRUtilATLLib.Signature();
+            checkSignature = new SignatureClass();
 
             Log.Info("Running Check Signature - call the wait terminal event");
 
@@ -272,7 +272,7 @@ namespace Acrelec.Mockingbird.Payment
         private DiagnosticErrMsg CheckECRServer()
         {
             //Set the Event Server 
-            terminalEvent = new TerminalEvent();
+            terminalEvent = new TerminalEventClass();
 
             // Start the ECR server
             terminalEvent.StartServer();

@@ -339,13 +339,13 @@ namespace Acrelec.Mockingbird.Payment
 
             switch (transactionStatusOut)
             {
-                case "0": { transactionOutStr = "Authorised - Transaction Complete"; } break;
+                case "0": { transactionOutStr = "Authorised"; } break;
                 case "1": { transactionOutStr = "Not Authorised "; } break;
                 case "2": { transactionOutStr = "Not processed – transaction failed before or during card entry"; } break;
                 case "3": { transactionOutStr = "Unable to authorise – transaction approved by host but declined by card "; } break;
                 case "4": { transactionOutStr = "Unable to process – Voice referral declined due to no referral number"; } break;
                 case "5": { transactionOutStr = "Unable to connect "; } break;
-                case "6": { transactionOutStr = "Void e.g.power fail, signature rejection"; } break;
+                case "6": { transactionOutStr = "Void"; } break;
                 case "7": { transactionOutStr = "Cancelled"; } break;
                 case "8": { transactionOutStr = "Invalid password"; } break;
                 case "9": { transactionOutStr = "Amount exceed maximum limit"; } break;

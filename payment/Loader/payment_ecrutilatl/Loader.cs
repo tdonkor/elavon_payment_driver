@@ -86,6 +86,7 @@ namespace Acrelec.Mockingbird.Payment
                         CurrentValue = "1",
                         ControlDescription = "POS Number"
                     }
+                    
                 }
             };
         }
@@ -300,20 +301,20 @@ namespace Acrelec.Mockingbird.Payment
                 //Check the status property of the parameters object to see if the Pay was successful
                 if (result.ResultCode == ResultCode.Success && result.Data?.Result == PaymentResult.Successful)
                 {
-                    _logger.Info(Constants.LOG_FILE, "Payment has been succeeded.");
+                    _logger.Info(Constants.LOG_FILE, "Payment has succeeded.");
 
                     LastStatus = PeripheralStatus.PeripheralOK();
                     return true;
                 }
                 else
                 {
-                    _logger.Info(Constants.LOG_FILE, "Payment has been failed.");
+                    _logger.Info(Constants.LOG_FILE, "Payment has failed.");
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.LOG_FILE, "Payment exception has been thrown.");
+                _logger.Error(Constants.LOG_FILE, "Payment exception thrown.");
                 _logger.Error(Constants.LOG_FILE, ex.ToString());
                 return false;
             }
@@ -347,7 +348,7 @@ namespace Acrelec.Mockingbird.Payment
             }
             catch (Exception ex)
             {
-                _logger.Error(Constants.LOG_FILE, "Unload exception has been thrown.");
+                _logger.Error(Constants.LOG_FILE, "Unload exception thrown.");
                 _logger.Error(Constants.LOG_FILE, ex.ToString());
                 return false;
             }

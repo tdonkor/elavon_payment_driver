@@ -161,7 +161,7 @@ namespace Acrelec.Mockingbird.Payment
                     data.PaidAmount = amount;
 
                     //create customer receipt if successful
-                    if ((DiagnosticErrMsg)Convert.ToInt32(payResponse.DiagRequestOut) == DiagnosticErrMsg.OK)
+                    if ((DiagnosticErrMsg)Convert.ToInt16(payResponse.DiagRequestOut) == DiagnosticErrMsg.OK)
                     {
                         Log.Info($"Transaction Status: { Utils.GetTransactionTypeString(Convert.ToInt16(payResponse.TransactionStatusOut))}");
 
