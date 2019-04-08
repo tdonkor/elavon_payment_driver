@@ -130,8 +130,7 @@ namespace Acrelec.Mockingbird.Payment
 
                     var payResult = api.Pay(amount, out var payResponse);
                     Log.Info($"Pay Result: {payResult}");
-                    Log.Info("Response Data: " + Utils.GetTransactionTypeString(Convert.ToInt16(payResponse.TransactionStatusOut)));
-
+                  
                     if (payResult != DiagnosticErrMsg.OK)
                     {
                         return new Result<PaymentData>((ResultCode)connectResult);
@@ -180,6 +179,8 @@ namespace Acrelec.Mockingbird.Payment
                     PersistTransaction(payResponse);
 
                     disconnectResult = api.Disconnect();
+
+                    // shut down the 
                     Log.Info($"Disconnect Result: {disconnectResult}");
                 }
 
@@ -227,57 +228,57 @@ namespace Acrelec.Mockingbird.Payment
                 StringBuilder customerReceipt = new StringBuilder();
                 StringBuilder merchantReceipt = new StringBuilder();
 
-                customerReceipt.Append($"CUSTOMER RECEIPT\n");
-                customerReceipt.Append($"=======================\n");
-                customerReceipt.Append($"Merchant Name: {result.MerchantNameOut}\n");
-                customerReceipt.Append($"Merchant Addr1: {result.MerchantAddress1Out}\n");
-                customerReceipt.Append($"Merchant Addr2: {result.MerchantAddress2Out}\n");
-                customerReceipt.Append($"Merchant Addr3: {result.MerchantAddress3Out}\n");
-                customerReceipt.Append($"Merchant Addr4: {result.MerchantAddress4Out}\n");
-                customerReceipt.Append($"Acquirer MerchantId: {result.AcquirerMerchantIDOut}\t");
-                customerReceipt.Append($"TID: {result.TerminalIdentifierOut}\n");
-                customerReceipt.Append($"Card Scheme Name: {result.CardSchemeNameOut}\n");
-                customerReceipt.Append($"AID: {result.AIDOut}\n");
-                customerReceipt.Append($"PAN: {result.PANOut}\n");
-                customerReceipt.Append($"PAN SEQ NUM:{result.PANSequenceNumberOut}\n");
-                customerReceipt.Append($"Entry Method: {Utils.GetEntryMethodString(result.EntryMethodOut)}\n");
-                customerReceipt.Append($"Transaction Type: {Utils.GetTransactionTypeString(Convert.ToInt16(result.TransactionStatusOut))}\n");
-                customerReceipt.Append("\nCARD HOLDER COPY\n");
-                customerReceipt.Append($"Currency: {Utils.GetCurrencySymbol(result.TerminalCurrencyCodeOut)}\n");
-                customerReceipt.Append($"Purchase Amount: {Utils.FormatReceiptAmount(result.TotalAmountOut)}\n");
-                customerReceipt.Append($"Date: {DateTime.Now.ToShortTimeString()} {DateTime.Now.ToShortDateString()}\n");
-                customerReceipt.Append($"Transaction Date/Time: {result.DateTimeOut}\n");
-                customerReceipt.Append("\nThank you\n");
-                customerReceipt.Append($"{result.HostTextOut}\n");          // Host Message
-                customerReceipt.Append("\n=====================\n");
-                customerReceipt.Append($"{Utils.TransactionOutResult(result.TransactionStatusOut)}\n");
-                customerReceipt.Append("=====================\n");
+                customerReceipt.Append($"\tCUSTOMER RECEIPT\n");
+                customerReceipt.Append($"\t=======================\n");
+                customerReceipt.Append($"\tMerchant Name: {result.MerchantNameOut}\n");
+                customerReceipt.Append($"\tMerchant Addr1: {result.MerchantAddress1Out}\n");
+                customerReceipt.Append($"\tMerchant Addr2: {result.MerchantAddress2Out}\n");
+                customerReceipt.Append($"\tMerchant Addr3: {result.MerchantAddress3Out}\n");
+                customerReceipt.Append($"\tMerchant Addr4: {result.MerchantAddress4Out}\n");
+                customerReceipt.Append($"\tAcquirer MerchantId: {result.AcquirerMerchantIDOut}\n");
+                customerReceipt.Append($"\tTID: {result.TerminalIdentifierOut}\n");
+                customerReceipt.Append($"\tCard Scheme Name: {result.CardSchemeNameOut}\n");
+                customerReceipt.Append($"\tAID: {result.AIDOut}\n");
+                customerReceipt.Append($"\tPAN: {result.PANOut}\n");
+                customerReceipt.Append($"\tPAN SEQ NUM:{result.PANSequenceNumberOut}\n");
+                customerReceipt.Append($"\tEntry Method: {Utils.GetEntryMethodString(result.EntryMethodOut)}\n");
+                customerReceipt.Append($"\tTransaction Type: {Utils.GetTransactionTypeString(Convert.ToInt16(result.TransactionStatusOut))}\n");
+                customerReceipt.Append("\tCARD HOLDER COPY\n");
+                customerReceipt.Append($"\tCurrency: {Utils.GetCurrencySymbol(result.TerminalCurrencyCodeOut)}\n");
+                customerReceipt.Append($"\tPurchase Amount: {Utils.FormatReceiptAmount(result.TotalAmountOut)}\n");
+                customerReceipt.Append($"\tDate: {DateTime.Now.ToShortTimeString()} {DateTime.Now.ToShortDateString()}\n");
+                customerReceipt.Append($"\tTransaction Date/Time: {result.DateTimeOut}\n");
+                customerReceipt.Append("\n\tThank you\n");
+                customerReceipt.Append($"\t{result.HostTextOut}\n");          // Host Message
+                customerReceipt.Append("\n\t=====================\n");
+                customerReceipt.Append($"\t\t{Utils.TransactionOutResult(result.TransactionStatusOut)}\n");
+                customerReceipt.Append("\t=====================\n");
 
 
                 //get the reponse details for the ticket
-                merchantReceipt.Append($"\n\nMERCHANT RECEIPT\n");
-                merchantReceipt.Append($"================\n\n");
-                merchantReceipt.Append($"Acquirer Merchant ID: {result.AcquirerMerchantIDOut}\n");
-                merchantReceipt.Append($"Merchant NAME:  {result.MerchantNameOut}\n");
-                merchantReceipt.Append($"Merchant ADDR1: {result.MerchantAddress1Out}\n");
-                merchantReceipt.Append($"Merchant ADDR2: {result.MerchantAddress2Out}\n");
-                merchantReceipt.Append($"Merchant ADDR3: {result.MerchantAddress3Out}\n");
-                merchantReceipt.Append($"Merchant ADDR4: {result.MerchantAddress4Out}\n");
-                merchantReceipt.Append($"Entry Method: {Utils.GetEntryMethodString(result.EntryMethodOut)}\n");
-                merchantReceipt.Append($"TID: {result.TerminalIdentifierOut}\n");
-                merchantReceipt.Append($"AID: {result.AIDOut}\n");
-                merchantReceipt.Append($"CARD SCHEME NAME: {result.CardSchemeNameOut}\n");
-                merchantReceipt.Append($"PAN: {result.PANOut}\n");
-                merchantReceipt.Append($"PAN Sequence Number: {result.PANSequenceNumberOut}\n");
-                merchantReceipt.Append($"Transaction Type: {Utils.GetTransactionTypeString(Convert.ToInt16(result.TransactionStatusOut))}\n");
-                merchantReceipt.Append($"Currency: {Utils.GetCurrencySymbol(result.TerminalCurrencyCodeOut)}\n");
-                merchantReceipt.Append($"Total Amount: {Utils.FormatReceiptAmount(result.TotalAmountOut)}\n");
-                merchantReceipt.Append($"Transaction DateTime: {result.DateTimeOut}\n");
-                merchantReceipt.Append($"Host Message: {result.HostTextOut}\n");
-                merchantReceipt.Append($"Acquirer Response Code: {result.AcquirerResponseCodeOut}\n");
-                merchantReceipt.Append("\n***********************\n");
-                merchantReceipt.Append($"{Utils.TransactionOutResult(result.TransactionStatusOut)}\n");
-                merchantReceipt.Append("***********************\n");
+                merchantReceipt.Append($"\n\tMERCHANT RECEIPT\n");
+                merchantReceipt.Append($"\t================\n");
+                merchantReceipt.Append($"\tAcquirer Merchant ID: {result.AcquirerMerchantIDOut}\n");
+                merchantReceipt.Append($"\tMerchant NAME:  {result.MerchantNameOut}\n");
+                merchantReceipt.Append($"\tMerchant ADDR1: {result.MerchantAddress1Out}\n");
+                merchantReceipt.Append($"\tMerchant ADDR2: {result.MerchantAddress2Out}\n");
+                merchantReceipt.Append($"\tMerchant ADDR3: {result.MerchantAddress3Out}\n");
+                merchantReceipt.Append($"\tMerchant ADDR4: {result.MerchantAddress4Out}\n");
+                merchantReceipt.Append($"\tEntry Method: {Utils.GetEntryMethodString(result.EntryMethodOut)}\n");
+                merchantReceipt.Append($"\tTID: {result.TerminalIdentifierOut}\n");
+                merchantReceipt.Append($"\tAID: {result.AIDOut}\n");
+                merchantReceipt.Append($"\tCARD SCHEME NAME: {result.CardSchemeNameOut}\n");
+                merchantReceipt.Append($"\tPAN: {result.PANOut}\n");
+                merchantReceipt.Append($"\tPAN Sequence Number: {result.PANSequenceNumberOut}\n");
+                merchantReceipt.Append($"\tTransaction Type: {Utils.GetTransactionTypeString(Convert.ToInt16(result.TransactionStatusOut))}\n");
+                merchantReceipt.Append($"\tCurrency: {Utils.GetCurrencySymbol(result.TerminalCurrencyCodeOut)}\n");
+                merchantReceipt.Append($"\tTotal Amount: {Utils.FormatReceiptAmount(result.TotalAmountOut)}\n");
+                merchantReceipt.Append($"\tTransaction DateTime: {result.DateTimeOut}\n");
+                merchantReceipt.Append($"\tHost Message: {result.HostTextOut}\n");
+                merchantReceipt.Append($"\tAcquirer Response Code: {result.AcquirerResponseCodeOut}\n");
+                merchantReceipt.Append("\n\t***********************\n");
+                merchantReceipt.Append($"\t\t{Utils.TransactionOutResult(result.TransactionStatusOut)}\n");
+                merchantReceipt.Append("\t***********************\n");
 
                 Log.Info("Persisting Customer and Merchant ticket to {0}", outputPath);
                 //Write the new ticket
@@ -324,29 +325,29 @@ namespace Acrelec.Mockingbird.Payment
 
             //get the reponse details for the ticket
             
-            ticketContent.Append($"CUSTOMER RECEIPT\n");
-            ticketContent.Append($"_______________________\n");
-            ticketContent.Append($"Merchant Name: {ticket.MerchantNameOut}\n");         
-            ticketContent.Append($"Merchant Addr1: {ticket.MerchantAddress1Out}\n");   
-            ticketContent.Append($"Merchant Addr2: {ticket.MerchantAddress2Out}\n");     
-            ticketContent.Append($"Acquirer MerchantId: {ticket.AcquirerMerchantIDOut}\t");   
-            ticketContent.Append($"TID: {ticket.TerminalIdentifierOut}\n");             
-            ticketContent.Append($"Card Scheme Name: {ticket.CardSchemeNameOut}\n");       
-            ticketContent.Append($"AID: {ticket.AIDOut}\n");                   
-            ticketContent.Append($"PAN: {ticket.PANOut}\n");                         
-            ticketContent.Append($"PAN SEQ NUM:{ticket.PANSequenceNumberOut}\n");      
-            ticketContent.Append($"Entry Method: {Utils.GetEntryMethodString(ticket.EntryMethodOut)}\n");
-            ticketContent.Append($"Transaction Type: {Utils.GetTransactionTypeString(Convert.ToInt16(ticket.TransactionStatusOut))}\n");   
-            ticketContent.Append("\nCARD HOLDER COPY\n");
-            ticketContent.Append($"Currency: {Utils.GetCurrencySymbol(ticket.TerminalCurrencyCodeOut)}\n");
-            ticketContent.Append($"Purchase Amount: {Utils.FormatReceiptAmount(ticket.TotalAmountOut)}\n");         
-            ticketContent.Append($"Date: {DateTime.Now.ToShortTimeString()} {DateTime.Now.ToShortDateString()}\n");
-            ticketContent.Append($"Transaction Date/Time: {ticket.DateTimeOut}\n");
-            ticketContent.Append("\nThank you\n");
-            ticketContent.Append($"{ticket.HostTextOut}\n");          // Host Message
-            ticketContent.Append("\n_______________________\n");
-            ticketContent.Append($"Order: {Utils.TransactionOutResult(ticket.TransactionStatusOut)}\n");
-            ticketContent.Append("_______________________\n");
+            ticketContent.Append($"\tCUSTOMER RECEIPT\n");
+            ticketContent.Append($"\t_______________________\n");
+            ticketContent.Append($"\tMerchant Name: {ticket.MerchantNameOut}\n");         
+            ticketContent.Append($"\tMerchant Addr1: {ticket.MerchantAddress1Out}\n");   
+            ticketContent.Append($"\tMerchant Addr2: {ticket.MerchantAddress2Out}\n");     
+            ticketContent.Append($"\tAcquirer MerchantId: {ticket.AcquirerMerchantIDOut}\n");   
+            ticketContent.Append($"\tTID: {ticket.TerminalIdentifierOut}\n");             
+            ticketContent.Append($"\tCard Scheme Name: {ticket.CardSchemeNameOut}\n");       
+            ticketContent.Append($"\tAID: {ticket.AIDOut}\n");                   
+            ticketContent.Append($"\tPAN: {ticket.PANOut}\n");                         
+            ticketContent.Append($"\tPAN SEQ NUM:{ticket.PANSequenceNumberOut}\n");      
+            ticketContent.Append($"\tEntry Method: {Utils.GetEntryMethodString(ticket.EntryMethodOut)}\n");
+            ticketContent.Append($"\tTransaction Type: {Utils.GetTransactionTypeString(Convert.ToInt16(ticket.TransactionStatusOut))}\n");   
+            ticketContent.Append("\n\tCARD HOLDER COPY\n");
+            ticketContent.Append($"\tCurrency: {Utils.GetCurrencySymbol(ticket.TerminalCurrencyCodeOut)}\n");
+            ticketContent.Append($"\t Amount: {Utils.FormatReceiptAmount(ticket.TotalAmountOut)}\n");         
+            ticketContent.Append($"\tDate: {DateTime.Now.ToShortTimeString()} {DateTime.Now.ToShortDateString()}\n");
+            ticketContent.Append($"\tTransaction Date/Time: {ticket.DateTimeOut}\n");
+            ticketContent.Append("\n\tThank you\n");
+            ticketContent.Append($"\t{ticket.HostTextOut}\n");          // Host Message
+            ticketContent.Append("\n\t_______________________\n");
+            ticketContent.Append($"\t\t{Utils.TransactionOutResult(ticket.TransactionStatusOut)}\n");
+            ticketContent.Append("\t_______________________\n");
 
 
             try

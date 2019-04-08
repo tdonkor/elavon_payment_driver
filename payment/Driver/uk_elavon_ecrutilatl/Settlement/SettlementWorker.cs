@@ -89,7 +89,7 @@ namespace Acrelec.Mockingbird.Payment.Settlement
             }
         }
 
-        private static void PersistReport(ECRUtilATLLib.Settlement report)
+        private static void PersistReport(SettlementClass report)
         {
             try
             {
@@ -97,42 +97,42 @@ namespace Acrelec.Mockingbird.Payment.Settlement
                 Log.Info($"Persist Report");
 
                 //get the reponse details for the ticket
-                reportContent.Append($"End of Day\n");
-                reportContent.Append($"================\n\n");
+                reportContent.Append($"\tEnd of Day\n");
+                reportContent.Append($"\t================\n\n");
 
                 /* Set the settlement outputs */
-                reportContent.Append($"MessageNumber: {report.MessageNumberOut}\n");
-                reportContent.Append($"Settlement Status: {report.SettlementStatusOut}\n");
-                reportContent.Append($"Settlement Date/Time: {report.SettlementDateTimeOut}\n");
-                reportContent.Append($"Settlement Response: {report.SettleResponseOut}\n");
-                reportContent.Append($"HelpDesk Number: {report.HelpDeskNumberOut}\n");
-                reportContent.Append($"Merchant Name: {report.MerchantNameOut}\n");
-                reportContent.Append($"Merchant Addr1: {report.MerchantAddress1Out}\n");
-                reportContent.Append($"Merchant Addr2: {report.MerchantAddress2Out}\n");
-                reportContent.Append($"Merchant Addr3: {report.MerchantAddress3Out}\n");
-                reportContent.Append($"Merchant Addr4: {report.MerchantAddress4Out}\n");
-                reportContent.Append($"Acquirer Merchant ID: {report.AcquirerMerchantIDOut}\n");
-                reportContent.Append($"Terminal Identifier: {report.TerminalIdentifierOut}\n");
-                reportContent.Append($"Terminal Country Code: {report.TerminalCountryCodeOut}\n");
-                reportContent.Append($"TerminalCurrencyCodeOut: {report.TerminalCurrencyCodeOut}\n");
-                reportContent.Append($"Terminal Currency Exponent: {report.TerminalCurrencyExponentOut}\n");
-                reportContent.Append($"Batch Number: {report.BatchNumberOut}\n");
-                reportContent.Append($"Acquirer Name: {report.AcquirerNameOut}\n");
-                reportContent.Append($"Cashbacks Amount: {report.CashbacksAmountOut}\n");
-                reportContent.Append($"Cashbacks Count: {report.CashbacksCountOut}\n");
-                reportContent.Append($"Debit Amount: {report.DebitAmountOut}\n");
-                reportContent.Append($"Debit Count: {report.DebitCountOut}\n");
-                reportContent.Append($"Credit Amount: {report.CreditAmountOut}\n");
-                reportContent.Append($"Credit Count: {report.CreditCountOut}\n");
-                reportContent.Append($"Sales Void Amount: {report.SalesVoidAmountOut}\n");
-                reportContent.Append($"Sales Void Count{report.SalesVoidCountOut}\n");
-                reportContent.Append($"Refunds Void Amount: {report.RefundsVoidAmountOut}\n");
-                reportContent.Append($"Refunds Void Count: {report.RefundsVoidCountOut}\n");
-                reportContent.Append($"Is Gratuity Enabled: {report.IsGratuityEnabledOut}\n");
-                reportContent.Append($"Gratuity Amount: {report.GratuityAmountOut}\n");
-                reportContent.Append($"Is Shift Process Enabled: {report.IsShiftProcessEnabledOut}\n");
-                reportContent.Append($"Sum Or Detail Report: {report.SumOrDetailReportOut}\n");
-                reportContent.Append($"Transaction Detail Data Record Number: {report.TransactionDetailDataRecordNumberOut}\n");
+                reportContent.Append($"\tMessageNumber: {report.MessageNumberOut}\n");
+                reportContent.Append($"\tSettlement Status: {report.SettlementStatusOut}\n");
+                reportContent.Append($"\tSettlement Date/Time: {report.SettlementDateTimeOut}\n");
+                reportContent.Append($"\tSettlement Response: {report.SettleResponseOut}\n");
+                reportContent.Append($"\tHelpDesk Number: {report.HelpDeskNumberOut}\n");
+                reportContent.Append($"\tMerchant Name: {report.MerchantNameOut}\n");
+                reportContent.Append($"\tMerchant Addr1: {report.MerchantAddress1Out}\n");
+                reportContent.Append($"\tMerchant Addr2: {report.MerchantAddress2Out}\n");
+                reportContent.Append($"\tMerchant Addr3: {report.MerchantAddress3Out}\n");
+                reportContent.Append($"\tMerchant Addr4: {report.MerchantAddress4Out}\n");
+                reportContent.Append($"\tAcquirer Merchant ID: {report.AcquirerMerchantIDOut}\n");
+                reportContent.Append($"\tTerminal Identifier: {report.TerminalIdentifierOut}\n");
+                reportContent.Append($"\tTerminal Country Code: {report.TerminalCountryCodeOut}\n");
+                reportContent.Append($"\tTerminalCurrencyCodeOut: {report.TerminalCurrencyCodeOut}\n");
+                reportContent.Append($"\tTerminal Currency Exponent: {report.TerminalCurrencyExponentOut}\n");
+                reportContent.Append($"\tBatch Number: {report.BatchNumberOut}\n");
+                reportContent.Append($"\tAcquirer Name: {report.AcquirerNameOut}\n");
+                reportContent.Append($"\tCashbacks Amount: {report.CashbacksAmountOut}\n");
+                reportContent.Append($"\tCashbacks Count: {report.CashbacksCountOut}\n");
+                reportContent.Append($"\tDebit Amount: {report.DebitAmountOut}\n");
+                reportContent.Append($"\tDebit Count: {report.DebitCountOut}\n");
+                reportContent.Append($"\tCredit Amount: {report.CreditAmountOut}\n");
+                reportContent.Append($"\tCredit Count: {report.CreditCountOut}\n");
+                reportContent.Append($"\tSales Void Amount: {report.SalesVoidAmountOut}\n");
+                reportContent.Append($"\tSales Void Count{report.SalesVoidCountOut}\n");
+                reportContent.Append($"\tRefunds Void Amount: {report.RefundsVoidAmountOut}\n");
+                reportContent.Append($"\tRefunds Void Count: {report.RefundsVoidCountOut}\n");
+                reportContent.Append($"\tIs Gratuity Enabled: {report.IsGratuityEnabledOut}\n");
+                reportContent.Append($"\tGratuity Amount: {report.GratuityAmountOut}\n");
+                reportContent.Append($"\tIs Shift Process Enabled: {report.IsShiftProcessEnabledOut}\n");
+                reportContent.Append($"\tSum Or Detail Report: {report.SumOrDetailReportOut}\n");
+                reportContent.Append($"\tTransaction Detail Data Record Number: {report.TransactionDetailDataRecordNumberOut}\n");
 
 
                 var config = AppConfiguration.Instance;
