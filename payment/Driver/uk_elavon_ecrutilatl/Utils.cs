@@ -379,7 +379,7 @@ namespace Acrelec.Mockingbird.Payment
                 case "6": { transactionOutStr = "Void"; } break;
                 case "7": { transactionOutStr = "Cancelled"; } break;
                 case "8": { transactionOutStr = "Invalid password"; } break;
-                case "9": { transactionOutStr = "Amount exceed maximum limit"; } break;
+                case "9": { transactionOutStr = "Amount exceeded maximum limit"; } break;
                 case "10": { transactionOutStr = "Connection failure"; } break;
                 case "11": { transactionOutStr = "Timeout reached"; } break;
                 case "12": { transactionOutStr = "Invoice not found"; } break;

@@ -106,6 +106,7 @@ namespace Acrelec.Mockingbird.Payment
             //
             DoTransaction(amount, TransactionType.Sale.ToString());
 
+
             result = PopulateResponse(transaction);
             return (DiagnosticErrMsg)Convert.ToInt16(transaction.DiagRequestOut);
         }
@@ -157,8 +158,8 @@ namespace Acrelec.Mockingbird.Payment
             if (transaction.DiagRequestOut == 0 /*No Error*/)
             {
                 // Display all the returned data
-                Log.Info("TransactionStatusOut: " + Utils.GetTransactionTypeString(Convert.ToInt16(transaction.TransactionStatusOut)));
-                Log.Info("EntryMethodOut: " + Utils.GetEntryMethodString(transaction.EntryMethodOut));
+                Log.Info("Transaction Status Out: " + Utils.GetTransactionTypeString(Convert.ToInt16(transaction.TransactionStatusOut)));
+                Log.Info("Entry Method Out: " + Utils.GetEntryMethodString(transaction.EntryMethodOut));
             }
             else
             {
@@ -172,15 +173,12 @@ namespace Acrelec.Mockingbird.Payment
         /// </summary>
         public async void CheckforEvents() 
         {
-
             try
             {
                 terminalEvent.GetServerState();
 
-
                 Log.Info("Calling WaitTerminal Event.....");
                 await Task.Run(new Action(terminalEvent.WaitTerminalEvent));
-
 
                 if (terminalEvent.EventIdentifierOut != 0x00 /* EV_NONE */)
                 {
@@ -194,7 +192,7 @@ namespace Acrelec.Mockingbird.Payment
                                 //void the signature if set
                                 checkSignature.SignatureStatusIn = 0x00; /* SIGN_NOT_ACCEPTED */
                                 checkSignature.SetSignStatus();
-                                Log.Info($"Signature status : {checkSignature.DiagRequestOut}");
+                                Log.Info($"Signature status : {Utils.GetDiagRequestString(checkSignature.DiagRequestOut)}");
                             }
                             break;
 

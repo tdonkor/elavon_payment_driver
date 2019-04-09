@@ -133,12 +133,19 @@ namespace Acrelec.Mockingbird.Payment
                   
                     if (payResult != DiagnosticErrMsg.OK)
                     {
+                        Log.Error($"Pay Result Not OK: {payResult}");
                         return new Result<PaymentData>((ResultCode)connectResult);
                     }
 
                      data.Result = (PaymentResult)Utils.GetTransactionOutResult(payResponse.TransactionStatusOut);
 
-          
+                    //check if Transaction is a reversal and fail if it is fail the Payment result
+                    if (Utils.GetTransactionTypeString(Convert.ToInt16(payResponse.TransactionStatusOut)) == "REVERSAL")
+                    {
+                        data.Result = PaymentResult.Failed;
+                    }
+
+
                     if (data.Result != PaymentResult.Successful)
                     {
                         if (data.Result == PaymentResult.Failed)
@@ -246,12 +253,11 @@ namespace Acrelec.Mockingbird.Payment
                 customerReceipt.Append("\tCARD HOLDER COPY\n");
                 customerReceipt.Append($"\tCurrency: {Utils.GetCurrencySymbol(result.TerminalCurrencyCodeOut)}\n");
                 customerReceipt.Append($"\tPurchase Amount: {Utils.FormatReceiptAmount(result.TotalAmountOut)}\n");
-                customerReceipt.Append($"\tDate: {DateTime.Now.ToShortTimeString()} {DateTime.Now.ToShortDateString()}\n");
-                customerReceipt.Append($"\tTransaction Date/Time: {result.DateTimeOut}\n");
+                customerReceipt.Append($"\tTransaction Date/Time: {DateTime.Now.ToShortTimeString()} {DateTime.Now.ToShortDateString()}\n");
                 customerReceipt.Append("\n\tThank you\n");
-                customerReceipt.Append($"\t{result.HostTextOut}\n");          // Host Message
+                customerReceipt.Append($"\tHost Message:{result.HostTextOut}\n");          // Host Message
                 customerReceipt.Append("\n\t=====================\n");
-                customerReceipt.Append($"\t\t{Utils.TransactionOutResult(result.TransactionStatusOut)}\n");
+                customerReceipt.Append($"\t{Utils.TransactionOutResult(result.TransactionStatusOut)}\n");
                 customerReceipt.Append("\t=====================\n");
 
 
@@ -273,12 +279,12 @@ namespace Acrelec.Mockingbird.Payment
                 merchantReceipt.Append($"\tTransaction Type: {Utils.GetTransactionTypeString(Convert.ToInt16(result.TransactionStatusOut))}\n");
                 merchantReceipt.Append($"\tCurrency: {Utils.GetCurrencySymbol(result.TerminalCurrencyCodeOut)}\n");
                 merchantReceipt.Append($"\tTotal Amount: {Utils.FormatReceiptAmount(result.TotalAmountOut)}\n");
-                merchantReceipt.Append($"\tTransaction DateTime: {result.DateTimeOut}\n");
+                merchantReceipt.Append($"\tTransaction DateTime: {DateTime.Now.ToShortTimeString()} {DateTime.Now.ToShortDateString()}\n");
                 merchantReceipt.Append($"\tHost Message: {result.HostTextOut}\n");
                 merchantReceipt.Append($"\tAcquirer Response Code: {result.AcquirerResponseCodeOut}\n");
-                merchantReceipt.Append("\n\t***********************\n");
-                merchantReceipt.Append($"\t\t{Utils.TransactionOutResult(result.TransactionStatusOut)}\n");
-                merchantReceipt.Append("\t***********************\n");
+                merchantReceipt.Append("\n\t=======================\n");
+                merchantReceipt.Append($"\t{Utils.TransactionOutResult(result.TransactionStatusOut)}\n");
+                merchantReceipt.Append("\t========================\n");
 
                 Log.Info("Persisting Customer and Merchant ticket to {0}", outputPath);
                 //Write the new ticket
@@ -338,13 +344,12 @@ namespace Acrelec.Mockingbird.Payment
             ticketContent.Append($"\tPAN SEQ NUM:{ticket.PANSequenceNumberOut}\n");      
             ticketContent.Append($"\tEntry Method: {Utils.GetEntryMethodString(ticket.EntryMethodOut)}\n");
             ticketContent.Append($"\tTransaction Type: {Utils.GetTransactionTypeString(Convert.ToInt16(ticket.TransactionStatusOut))}\n");   
-            ticketContent.Append("\n\tCARD HOLDER COPY\n");
+            ticketContent.Append("\tCARD HOLDER COPY\n");
             ticketContent.Append($"\tCurrency: {Utils.GetCurrencySymbol(ticket.TerminalCurrencyCodeOut)}\n");
-            ticketContent.Append($"\t Amount: {Utils.FormatReceiptAmount(ticket.TotalAmountOut)}\n");         
-            ticketContent.Append($"\tDate: {DateTime.Now.ToShortTimeString()} {DateTime.Now.ToShortDateString()}\n");
-            ticketContent.Append($"\tTransaction Date/Time: {ticket.DateTimeOut}\n");
+            ticketContent.Append($"\tAmount: {Utils.FormatReceiptAmount(ticket.TotalAmountOut)}\n");         
+            ticketContent.Append($"\tTransaction Date/Time: {DateTime.Now.ToShortTimeString()} {DateTime.Now.ToShortDateString()}\n");
             ticketContent.Append("\n\tThank you\n");
-            ticketContent.Append($"\t{ticket.HostTextOut}\n");          // Host Message
+            ticketContent.Append($"\tHost Message: {ticket.HostTextOut}\n");          // Host Message
             ticketContent.Append("\n\t_______________________\n");
             ticketContent.Append($"\t\t{Utils.TransactionOutResult(ticket.TransactionStatusOut)}\n");
             ticketContent.Append("\t_______________________\n");
