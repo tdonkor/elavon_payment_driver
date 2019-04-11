@@ -99,6 +99,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="PAY_UK_ELAVON_ECRUTILATL.ini" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="acrelec_icon.ico" />

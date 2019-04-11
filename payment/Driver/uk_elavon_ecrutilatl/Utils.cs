@@ -464,7 +464,26 @@ namespace Acrelec.Mockingbird.Payment
             return CurrencySymbol;
         }
 
+        public static char GetCurrencyChar(string currencySymbol)
+        {
 
+            Console.OutputEncoding = System.Text.Encoding.Unicode;
+            char currencyChar = ' ';
+
+
+            switch (currencySymbol)
+            {
+                case "AUD":
+                case "CAD":
+                case "USD": { currencyChar = '\u0024'; } break;
+                case "EUR": { currencyChar = '\u20AC'; } break;
+                case "GBP": { currencyChar = '\u00A3'; } break;
+                case "CNY":
+                case "JPY": { currencyChar = '\u00a5'; } break;
+                default: { currencyChar = ' '; } break;
+            }
+            return currencyChar;
+        }
         public static string FormatReceiptAmount(string amountStr)
         {
             float amount = 0.0f;

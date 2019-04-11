@@ -24,7 +24,8 @@ namespace Acrelec.Mockingbird.Payment
         {
             Log.Info("Init method started...");
 
-            Log.Info($"IP Address value : {configuration.IpAddress}");
+            //initalise confguration file instance
+            var configFile = AppConfiguration.Instance;
 
             try
             {
@@ -39,16 +40,27 @@ namespace Acrelec.Mockingbird.Payment
                     Log.Info($"Invalid PosNumber {configuration.PosNumber}.");
                     return ResultCode.GenericError;
                 }
+
                 if (configuration.IpAddress == string.Empty)
                 {
                     Log.Info($"Invalid IPAddress {configuration.IpAddress}.");
                     return ResultCode.GenericError;
                 }
 
+                if  (string.IsNullOrEmpty(configFile.IpAddress))
+                {
+                    Log.Info(".ini file IP Address value must be set.");
+                    return ResultCode.GenericError;
+                }
+
+                Log.Info($"Configuration default IPAddress: {configuration.IpAddress}.");
+                Log.Info($".ini file IPAddress: {configFile.IpAddress}.");
+
                 using (var api = new ECRUtilATLApi())
                 {
-                    var connectResult = api.Connect(configuration.IpAddress);
-                    
+                    // var connectResult = api.Connect(configuration.IpAddress);
+                    var connectResult = api.Connect(configFile.IpAddress);
+
                     Log.Info($"Connect Result: {connectResult}");
 
                     if (connectResult != DiagnosticErrMsg.OK)
@@ -251,8 +263,8 @@ namespace Acrelec.Mockingbird.Payment
                 customerReceipt.Append($"\tEntry Method: {Utils.GetEntryMethodString(result.EntryMethodOut)}\n");
                 customerReceipt.Append($"\tTransaction Type: {Utils.GetTransactionTypeString(Convert.ToInt16(result.TransactionStatusOut))}\n");
                 customerReceipt.Append("\tCARD HOLDER COPY\n");
-                customerReceipt.Append($"\tCurrency: {Utils.GetCurrencySymbol(result.TerminalCurrencyCodeOut)}\n");
-                customerReceipt.Append($"\tPurchase Amount: {Utils.FormatReceiptAmount(result.TotalAmountOut)}\n");
+                customerReceipt.Append($"\tTerminal Currency: {Utils.GetCurrencySymbol(result.TerminalCurrencyCodeOut)}\n");
+                customerReceipt.Append($"\tPurchase Amount: {Utils.GetCurrencyChar(Utils.GetCurrencySymbol(result.TerminalCurrencyCodeOut))}{Utils.FormatReceiptAmount(result.TotalAmountOut)}\n");
                 customerReceipt.Append($"\tTransaction Date/Time: {DateTime.Now.ToShortTimeString()} {DateTime.Now.ToShortDateString()}\n");
                 customerReceipt.Append("\n\tThank you\n");
                 customerReceipt.Append($"\tHost Message:{result.HostTextOut}\n");          // Host Message
@@ -277,8 +289,8 @@ namespace Acrelec.Mockingbird.Payment
                 merchantReceipt.Append($"\tPAN: {result.PANOut}\n");
                 merchantReceipt.Append($"\tPAN Sequence Number: {result.PANSequenceNumberOut}\n");
                 merchantReceipt.Append($"\tTransaction Type: {Utils.GetTransactionTypeString(Convert.ToInt16(result.TransactionStatusOut))}\n");
-                merchantReceipt.Append($"\tCurrency: {Utils.GetCurrencySymbol(result.TerminalCurrencyCodeOut)}\n");
-                merchantReceipt.Append($"\tTotal Amount: {Utils.FormatReceiptAmount(result.TotalAmountOut)}\n");
+                merchantReceipt.Append($"\tTerminal Currency: {Utils.GetCurrencySymbol(result.TerminalCurrencyCodeOut)}\n");
+                merchantReceipt.Append($"\tPurchase Amount: {Utils.GetCurrencyChar(Utils.GetCurrencySymbol(result.TerminalCurrencyCodeOut))}{Utils.FormatReceiptAmount(result.TotalAmountOut)}\n");
                 merchantReceipt.Append($"\tTransaction DateTime: {DateTime.Now.ToShortTimeString()} {DateTime.Now.ToShortDateString()}\n");
                 merchantReceipt.Append($"\tHost Message: {result.HostTextOut}\n");
                 merchantReceipt.Append($"\tAcquirer Response Code: {result.AcquirerResponseCodeOut}\n");
@@ -345,8 +357,8 @@ namespace Acrelec.Mockingbird.Payment
             ticketContent.Append($"\tEntry Method: {Utils.GetEntryMethodString(ticket.EntryMethodOut)}\n");
             ticketContent.Append($"\tTransaction Type: {Utils.GetTransactionTypeString(Convert.ToInt16(ticket.TransactionStatusOut))}\n");   
             ticketContent.Append("\tCARD HOLDER COPY\n");
-            ticketContent.Append($"\tCurrency: {Utils.GetCurrencySymbol(ticket.TerminalCurrencyCodeOut)}\n");
-            ticketContent.Append($"\tAmount: {Utils.FormatReceiptAmount(ticket.TotalAmountOut)}\n");         
+            ticketContent.Append($"\tTerminal Currency: {Utils.GetCurrencySymbol(ticket.TerminalCurrencyCodeOut)}\n");
+            ticketContent.Append($"\tPurchase Amount: {Utils.GetCurrencyChar(Utils.GetCurrencySymbol(ticket.TerminalCurrencyCodeOut))}{Utils.FormatReceiptAmount(ticket.TotalAmountOut)}\n");
             ticketContent.Append($"\tTransaction Date/Time: {DateTime.Now.ToShortTimeString()} {DateTime.Now.ToShortDateString()}\n");
             ticketContent.Append("\n\tThank you\n");
             ticketContent.Append($"\tHost Message: {ticket.HostTextOut}\n");          // Host Message

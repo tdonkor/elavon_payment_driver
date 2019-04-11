@@ -41,6 +41,10 @@ namespace Acrelec.Mockingbird.Payment.Configuration
                 Log.Info($"Configuration file {path} not found. Using default values.");
                 return;
             }
+            else
+            {
+                Log.Info($"Configuration file: {path} found.");
+            }
 
             var section = string.Empty;
             foreach (var line in File.ReadAllLines(path))
@@ -70,6 +74,14 @@ namespace Acrelec.Mockingbird.Payment.Configuration
             get
             {
                 return _entries.FirstOrDefault(_ => _.Key =="OUT_PATH")?.Value ?? @"out\";
+            }
+        }
+
+        public string IpAddress
+        {
+            get
+            {
+                return _entries.FirstOrDefault(_ => _.Key == "IPADDRESS")?.Value ?? "1.1.1.2";
             }
         }
 

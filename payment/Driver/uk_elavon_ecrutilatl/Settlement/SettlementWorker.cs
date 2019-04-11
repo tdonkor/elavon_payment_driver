@@ -72,8 +72,9 @@ namespace Acrelec.Mockingbird.Payment.Settlement
             using (var api = new ECRUtilATLApi())
             {
                 var config = RuntimeConfiguration.Instance;
+                var configFile = AppConfiguration.Instance;
 
-                api.Connect(config.IpAddress);
+                api.Connect(configFile.IpAddress);
 
                 Log.Info("Executing auto settlement...");
                 var result = api.EndOfDayReport();
