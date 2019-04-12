@@ -109,7 +109,7 @@ namespace Acrelec.Mockingbird.Payment
             ReceivePayProgressCalls = false
         };
 
-        public int MinAPILevel => 1;
+        public int MinAPILevel => 3;
 
         public string DriverVersion
         {
