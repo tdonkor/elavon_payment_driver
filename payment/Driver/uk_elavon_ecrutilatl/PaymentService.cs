@@ -265,7 +265,7 @@ namespace Acrelec.Mockingbird.Payment
                 customerReceipt.Append("\tCARD HOLDER COPY\n");
                 customerReceipt.Append($"\tTerminal Currency: {Utils.GetCurrencySymbol(result.TerminalCurrencyCodeOut)}\n");
                 customerReceipt.Append($"\tPurchase Amount: {Utils.GetCurrencyChar(Utils.GetCurrencySymbol(result.TerminalCurrencyCodeOut))}{Utils.FormatReceiptAmount(result.TotalAmountOut)}\n");
-                customerReceipt.Append($"\tTransaction Date/Time: {DateTime.Now.ToShortTimeString()} {DateTime.Now.ToShortDateString()}\n");
+                customerReceipt.Append($"\tTransaction Date/Time:\n{DateTime.Now.ToShortTimeString()} {DateTime.Now.ToShortDateString()}\n");
                 customerReceipt.Append("\n\tThank you\n");
                 customerReceipt.Append($"\tHost Message:{result.HostTextOut}\n");          // Host Message
                 customerReceipt.Append("\n\t=====================\n");
@@ -291,7 +291,7 @@ namespace Acrelec.Mockingbird.Payment
                 merchantReceipt.Append($"\tTransaction Type: {Utils.GetTransactionTypeString(Convert.ToInt16(result.TransactionStatusOut))}\n");
                 merchantReceipt.Append($"\tTerminal Currency: {Utils.GetCurrencySymbol(result.TerminalCurrencyCodeOut)}\n");
                 merchantReceipt.Append($"\tPurchase Amount: {Utils.GetCurrencyChar(Utils.GetCurrencySymbol(result.TerminalCurrencyCodeOut))}{Utils.FormatReceiptAmount(result.TotalAmountOut)}\n");
-                merchantReceipt.Append($"\tTransaction DateTime: {DateTime.Now.ToShortTimeString()} {DateTime.Now.ToShortDateString()}\n");
+                merchantReceipt.Append($"\tTransaction Date/Time:\n{DateTime.Now.ToShortTimeString()} {DateTime.Now.ToShortDateString()}\n");
                 merchantReceipt.Append($"\tHost Message: {result.HostTextOut}\n");
                 merchantReceipt.Append($"\tAcquirer Response Code: {result.AcquirerResponseCodeOut}\n");
                 merchantReceipt.Append("\n\t=======================\n");
@@ -359,7 +359,7 @@ namespace Acrelec.Mockingbird.Payment
             ticketContent.Append("\tCARD HOLDER COPY\n");
             ticketContent.Append($"\tTerminal Currency: {Utils.GetCurrencySymbol(ticket.TerminalCurrencyCodeOut)}\n");
             ticketContent.Append($"\tPurchase Amount: {Utils.GetCurrencyChar(Utils.GetCurrencySymbol(ticket.TerminalCurrencyCodeOut))}{Utils.FormatReceiptAmount(ticket.TotalAmountOut)}\n");
-            ticketContent.Append($"\tTransaction Date/Time: {DateTime.Now.ToShortTimeString()} {DateTime.Now.ToShortDateString()}\n");
+            ticketContent.Append($"\tTransaction Date/Time:\n{DateTime.Now.ToShortTimeString()} {DateTime.Now.ToShortDateString()}\n");
             ticketContent.Append("\n\tThank you\n");
             ticketContent.Append($"\tHost Message: {ticket.HostTextOut}\n");          // Host Message
             ticketContent.Append("\n\t_______________________\n");
