@@ -1,77 +1,65 @@
-﻿using Acrelec.Library.Logger;
-using System;
-using System.Net;
-using System.Net.Sockets;
-using System.Threading;
+﻿//using Acrelec.Library.Logger;
+//using Acrelec.Mockingbird.Payment;
+//using Acrelec.Mockingbird.Payment.Configuration;
+//using Acrelec.Mockingbird.Payment.Contracts;
+//using ECRUtilATLLib;
+//using System;
+//using System.IO;
+//using System.Net;
+//using System.Net.Sockets;
+//using System.Text;
+//using System.Threading;
 
-namespace Acrelec.Mockingbird.Payment.Settlement
-{
-    public class SettlementListener : IDisposable
-    {
-        public delegate void WorkerHandle(Action<string> fileSender);
+//namespace Acrelec.Mockingbird.Payment.Settlement
+//{
 
-        private TcpListener _tcpListener;
+//    public class SettlementListener : IDisposable
+//    {
+//        Thread listenerThread;
+//        DoPrintJob doPrintJob;
 
-        private Thread _listenerThread;
+//    public SettlementListener()
+//    {
+//        //check for Settlement
+//        Log.Info("Auto settlement has been triggered...");
 
-        private WorkerHandle _worker;
+//         ExecuteSettlement();
+//    }
 
-        public SettlementListener(int port, WorkerHandle worker)
-        {
-            Log.Info($"Creating listener on port { port }...");
+//    public void Dispose()
+//    {
+//        Log.Info("Disposing");
+//    }
 
-            _worker = worker;
-            _tcpListener = new TcpListener(IPAddress.Any, port);
-            _tcpListener.Start();
+//    public void ExecuteSettlement()
+//    {
+//      using (var api = new ECRUtilATLApi())
+//      {
+//        var config = RuntimeConfiguration.Instance;
+//        var configFile = AppConfiguration.Instance;
 
-            _listenerThread = new Thread(DoWork);
-            _listenerThread.Start();
-        }
+//        doPrintJob = new DoPrintJob();
 
-        public void Dispose()
-        {
-            _worker = null;
+//          //listen for the Batch End Of Day
+//          listenerThread = new Thread(doPrintJob.DoThePrintJob);
+//          listenerThread.Start();
+                
 
-            _listenerThread.Abort();
-            _listenerThread = null;
+//        api.Connect(configFile.IpAddress);
 
-            _tcpListener.Stop();
-            _tcpListener = null;
+//        var result = api.DoSettlementReport();
+//        if (result == null)
+//        {
+//            Log.Info($"Error executing settlement: {result}");
+//        }
+//        else
+//        {
+//            Log.Info("Auto settlement executed.");
+           
+//        }
+//    }
+//}
+        
 
-            Log.Info("Listener disposed.");
-        }
-
-        private void DoWork()
-        {
-            while (true)
-            {
-                try
-                {
-                    using (var socket = _tcpListener.AcceptSocket())
-                    {
-                        if (!socket.Connected)
-                        {
-                            Log.Info($"{ socket.RemoteEndPoint } NOT connected. Ignoring...");
-                            continue;
-                        }
-
-                        Log.Info($"{ socket.RemoteEndPoint } connected.");
-
-                        Log.Info("Executing worker...");
-                        _worker(_ =>
-                        {
-                            Log.Info("Sending file started!");
-                            socket.SendFile(_);
-                            Log.Info("File sent!");
-                        });
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log.Error("Error sending file.");
-                    Log.Error(ex);
-                }
-            }
-        }
-    }
-}
+//  }
+//}

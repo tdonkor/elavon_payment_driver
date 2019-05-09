@@ -85,14 +85,14 @@ namespace Acrelec.Mockingbird.Payment.Configuration
             }
         }
 
-        public int SettlementTriggerPort
-        {
-            get
-            {
-                var entry = _entries.FirstOrDefault(_ => _.Key == "SETTLEMENT_LISTENER_PORT")?.Value;
-                return int.TryParse(entry, out var result) ? result : 9845;
-            }
-        }
+        //public int SettlementTriggerPort
+        //{
+        //    get
+        //    {
+        //        var entry = _entries.FirstOrDefault(_ => _.Key == "SETTLEMENT_LISTENER_PORT")?.Value;
+        //        return int.TryParse(entry, out var result) ? result : 5187;
+        //    }
+        //}
 
         public int HeartbeatInterval
         {

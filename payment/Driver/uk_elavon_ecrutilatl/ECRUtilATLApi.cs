@@ -1,7 +1,10 @@
 ﻿using System;
+using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using Acrelec.Library.Logger;
+using Acrelec.Mockingbird.Payment.Configuration;
 using ECRUtilATLLib;
 
 namespace Acrelec.Mockingbird.Payment
@@ -17,6 +20,8 @@ namespace Acrelec.Mockingbird.Payment
         TransactionResponse transactionResponse;
         SignatureClass checkSignature;
         SettlementClass getSettlement;
+       
+        
 
 
         /// <summary>
@@ -25,6 +30,7 @@ namespace Acrelec.Mockingbird.Payment
         public ECRUtilATLApi()
         {
             transaction = new TransactionClass();
+     
         }
 
         public void Dispose()
@@ -111,30 +117,6 @@ namespace Acrelec.Mockingbird.Payment
             return (DiagnosticErrMsg)Convert.ToInt16(transaction.DiagRequestOut);
         }
 
-
-
-        /// <summary>
-        /// End of day report
-        /// </summary>
-        /// <param name="amount"></param>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        public SettlementClass EndOfDayReport()
-        {
-            Log.Info("Printing end of day report...");
-            
-            getSettlement = new SettlementClass();
-
-            // do the settlement
-            getSettlement.MessageNumberIn = transaction.MessageNumberOut;
-            getSettlement.DoSettlement();
-
-            if ((DiagnosticErrMsg)(Convert.ToInt16(getSettlement.DiagRequestOut)) == DiagnosticErrMsg.OK)
-                return getSettlement;
-            else return null;
-        }
-
-
         /// <summary>
         ///  Do the transaction
         /// </summary>
@@ -195,7 +177,6 @@ namespace Acrelec.Mockingbird.Payment
                                 Log.Info($"Signature status : {Utils.GetDiagRequestString(checkSignature.DiagRequestOut)}");
                             }
                             break;
-
                         case 0x02: //Voice Verification Event
                             {
                                 VoiceReferralClass voiceRef = new VoiceReferralClass();
@@ -203,6 +184,20 @@ namespace Acrelec.Mockingbird.Payment
                                 voiceRef.AuthorisationStatusIn = 0x00; //cancel
                                 voiceRef.SetAuthorisation();
                                 Log.Info($"VoiceReferral Event status : {Utils.GetDiagRequestString(voiceRef.DiagRequestOut)}");
+                            }
+                            break;
+                        case 0x04: //Automatic Settlement Event
+                            {
+                                Random randomNum = new Random();
+                                Log.Info("Auto settlement has been triggered...");
+
+                                getSettlement = new SettlementClass();
+                                getSettlement.MessageNumberIn = randomNum.Next(10, 99).ToString();
+
+                                // do the settlement
+                                getSettlement.DoSettlement();
+                                Log.Info($"Automatic Settlement Event : {Utils.GetDiagRequestString(getSettlement.DiagRequestOut)}");
+                                
                             }
                             break;
                         case 0x07: //Partial Auth Event
@@ -235,7 +230,7 @@ namespace Acrelec.Mockingbird.Payment
                                 EFTHostDeclinedClass eftDeclined = new EFTHostDeclinedClass();
 
                                 //send the ackknowledgement
-                                Console.WriteLine($"Host Decline message: {eftDeclined.HostMessageOut}");
+                                Log.Info($"Host Decline message: {eftDeclined.HostMessageOut}");
                                 eftDeclined.SendHostDeclinedAck();
                                 Log.Info($"EFT Host Declined Event status : {Utils.GetDiagRequestString(eftDeclined.DiagRequestOut)}");
 
@@ -247,7 +242,7 @@ namespace Acrelec.Mockingbird.Payment
                                 DCCRefundConfirmationClass dccRefund = new DCCRefundConfirmationClass();
                                 dccRefund.DCCRefundConfirmStatusIn = 0x01; //decline dcc refund
                                 dccRefund.SetDCCRefundConfirmStatus();
-                                Console.WriteLine($"CDCC Refund Confirmation Event Status  : {Utils.GetDiagRequestString(dccRefund.DiagRequestOut)}");
+                                Log.Info($"CDCC Refund Confirmation Event Status  : {Utils.GetDiagRequestString(dccRefund.DiagRequestOut)}");
                             }
                             break;
 
@@ -291,7 +286,7 @@ namespace Acrelec.Mockingbird.Payment
                         //ignore any of these events we don't need to deal with any of these.
 
                         case 0x03: //DCC Quotation Information Event
-                        case 0x04: //Automatic Settlement Event
+                       
                         case 0x05: //Automatic MTU Settlement Event
                         case 0x06: //Password InformationEvent
                         case 0x08: //AVS Rejection Event
@@ -501,5 +496,6 @@ namespace Acrelec.Mockingbird.Payment
 
             return transactionResponse;
         }
+       
     }
 }

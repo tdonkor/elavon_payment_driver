@@ -6,7 +6,7 @@ using System.Text;
 using System.IO;
 using System.Reflection;
 using System.ServiceModel;
-
+using ECRUtilATLLib;
 
 namespace Acrelec.Mockingbird.Payment
 {
@@ -365,7 +365,6 @@ namespace Acrelec.Mockingbird.Payment
             ticketContent.Append("\n\t_______________________\n");
             ticketContent.Append($"\t\t{Utils.TransactionOutResult(ticket.TransactionStatusOut)}\n");
             ticketContent.Append("\t_______________________\n");
-
 
             try
             {
