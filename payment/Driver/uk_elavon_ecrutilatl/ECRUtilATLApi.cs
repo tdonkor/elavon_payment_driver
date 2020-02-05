@@ -22,8 +22,6 @@ namespace Acrelec.Mockingbird.Payment
         SettlementClass getSettlement;
        
         
-
-
         /// <summary>
         /// Constructor initialise All the objects needed
         /// </summary>
@@ -54,17 +52,15 @@ namespace Acrelec.Mockingbird.Payment
             if (diagErr != DiagnosticErrMsg.OK) return diagErr;
 
             //Check Reciept status
-            diagErr = CheckReceiptInit();
-            if (diagErr != DiagnosticErrMsg.OK) return diagErr;
-
+            CheckReceiptInit();
+            
             //Check the status
             diagErr = CheckStatus();
             if (diagErr != DiagnosticErrMsg.OK) return diagErr;
 
             //set the PED timeDate
-            diagErr = SetTimeDate();
-            if (diagErr != DiagnosticErrMsg.OK) return diagErr;
-
+            SetTimeDate();
+            
             //no error
             return diagErr;
         }
@@ -319,7 +315,7 @@ namespace Acrelec.Mockingbird.Payment
         /// Set the Ped Date/Time
         /// </summary>
         /// <returns>diagnostic value</returns>
-        private DiagnosticErrMsg SetTimeDate()
+        private void SetTimeDate()
         {
             //Set the PED Date time inputs
             pedDateTime = new TimeDate();
@@ -331,7 +327,7 @@ namespace Acrelec.Mockingbird.Payment
             pedDateTime.SecondIn = DateTime.Now.Second.ToString();
 
             //check the connection result 
-            return (DiagnosticErrMsg)(pedDateTime.DiagRequestOut);
+            Log.Info("TimeDate Set : " + (DiagnosticErrMsg)(pedDateTime.DiagRequestOut));
         }
 
         /// <summary>
@@ -353,7 +349,7 @@ namespace Acrelec.Mockingbird.Payment
         /// Disable reciept printing
         /// </summary>
         /// <returns>Diagnostic value</returns>
-        private DiagnosticErrMsg CheckReceiptInit()
+        private void CheckReceiptInit()
         {
             // disable the receipt Printing
             initTxnReceiptPrint = new InitTxnReceiptPrint();
@@ -361,13 +357,7 @@ namespace Acrelec.Mockingbird.Payment
             initTxnReceiptPrint.SetTxnReceiptPrintStatus();
 
             //check printing disabled
-            if (initTxnReceiptPrint.DiagRequestOut == 0)
-                Log.Info("apiInitTxnReceiptPrint OFF");
-            else
-                Log.Info("apiInitTxnReceiptPrint ON");
-
-            //check the connection result 
-            return (DiagnosticErrMsg)(initTxnReceiptPrint.DiagRequestOut);
+            Log.Info("Printing Disabled: " + (DiagnosticErrMsg)(initTxnReceiptPrint.DiagRequestOut));
         }
 
         /// <summary>
